@@ -13,7 +13,11 @@ class OctopusListContainerView: UIView {
     var collectionView: UICollectionView!
     weak var mainTableView: UITableView?
 
-    private var dataView: [UIView] = []
+    var dataView: [UIScrollView] = [] {
+        didSet {
+//            collectionView.reloadData()
+        }
+    }
 
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -34,10 +38,13 @@ class OctopusListContainerView: UIView {
         self.addSubview(collectionView)
         collectionView.constraintEqualToSuperView()
 
-        let firstVC = OctopusDataViewController()
-        let secondVC = OctopusDataViewController()
-        let vcs: [UIViewController] = [firstVC, secondVC]
-        dataView = vcs.map({ $0.view })
+        let firstView = TestTableView()
+        firstView.dataSource = self
+        firstView.backgroundColor = .green
+        let secondView = TestTableView()
+        secondView.dataSource = self
+        secondView.backgroundColor = .yellow
+        dataView = [firstView, secondView]
     }
 
     required init?(coder aDecoder: NSCoder) {
@@ -61,7 +68,7 @@ extension OctopusListContainerView: UICollectionViewDataSource {
         for view in cell.contentView.subviews {
             view.removeFromSuperview()
         }
-        let view =  dataView[indexPath.row]
+        let view = dataView[indexPath.row]
         cell.contentView.addSubview(view)
         view.constraintEqualToSuperView()
 
@@ -87,5 +94,28 @@ extension OctopusListContainerView: UICollectionViewDelegate {
         if scrollView.isTracking || scrollView.isDecelerating {
             self.mainTableView?.isScrollEnabled = false
         }
+    }
+}
+
+extension OctopusListContainerView: UICollectionViewDelegateFlowLayout {
+    public func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
+        layoutIfNeeded()
+        return bounds.size
+    }
+}
+
+extension OctopusListContainerView: UITableViewDataSource {
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        return 100
+    }
+
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+
+        let cell = UITableViewCell()
+        cell.contentView.subviews.forEach({
+            $0.removeFromSuperview()
+        })
+        cell.textLabel?.text = "\(indexPath.row)"
+        return cell
     }
 }

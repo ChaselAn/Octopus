@@ -7,16 +7,24 @@
 //
 
 import UIKit
+import Octopus
 
 class ViewController: UIViewController {
 
+    private let octopusView = OctopusView()
+
     override func viewDidLoad() {
         super.viewDidLoad()
-        // Do any additional setup after loading the view, typically from a nib.
+
+        octopusView.contentInsetAdjustmentBehavior = .never
+        octopusView.targetVC = self
+        view.addSubview(octopusView)
+        octopusView.translatesAutoresizingMaskIntoConstraints = false
+        octopusView.topAnchor.constraint(equalTo: view.topAnchor).isActive = true
+        octopusView.leadingAnchor.constraint(equalTo: view.leadingAnchor).isActive = true
+        octopusView.trailingAnchor.constraint(equalTo: view.trailingAnchor).isActive = true
+        octopusView.bottomAnchor.constraint(equalTo: view.bottomAnchor).isActive = true
     }
-
-
-
 
 }
 

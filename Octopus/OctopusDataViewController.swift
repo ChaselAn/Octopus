@@ -10,12 +10,14 @@ import UIKit
 
 class OctopusDataViewController: UIViewController {
 
-    private let tableView = TestTableView()
+    let tableView = TestTableView()
 
     override func viewDidLoad() {
         super.viewDidLoad()
 
         tableView.dataSource = self
+        tableView.backgroundColor = UIColor.green
+        tableView.rowHeight = 50
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "testCell")
         view.addSubview(tableView)
         tableView.constraintEqualToSuperView()
@@ -34,7 +36,15 @@ extension OctopusDataViewController: UITableViewDataSource {
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "testCell", for: indexPath)
-        cell.textLabel?.text = "\(indexPath.row)"
+        cell.contentView.subviews.forEach({
+            $0.removeFromSuperview()
+        })
+
+        let label = UILabel()
+        label.text = "\(indexPath.row)"
+        cell.contentView.addSubview(label)
+        label.constraintEqualToSuperView()
+        cell.backgroundColor = .clear
         return cell
     }
 }
