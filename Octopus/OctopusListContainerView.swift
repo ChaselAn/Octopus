@@ -13,6 +13,8 @@ class OctopusListContainerView: UIView {
     var collectionView: UICollectionView!
     weak var mainTableView: UITableView?
 
+    private var dataView: [UIView] = []
+
     override init(frame: CGRect) {
         super.init(frame: frame)
 
@@ -31,6 +33,11 @@ class OctopusListContainerView: UIView {
         collectionView.register(UICollectionViewCell.classForCoder(), forCellWithReuseIdentifier: "cell")
         self.addSubview(collectionView)
         collectionView.constraintEqualToSuperView()
+
+        let firstVC = OctopusDataViewController()
+        let secondVC = OctopusDataViewController()
+        let vcs: [UIViewController] = [firstVC, secondVC]
+        dataView = vcs.map({ $0.view })
     }
 
     required init?(coder aDecoder: NSCoder) {
@@ -46,7 +53,7 @@ class OctopusListContainerView: UIView {
 extension OctopusListContainerView: UICollectionViewDataSource {
 
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return 2
+        return dataView.count
     }
 
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
@@ -54,9 +61,9 @@ extension OctopusListContainerView: UICollectionViewDataSource {
         for view in cell.contentView.subviews {
             view.removeFromSuperview()
         }
-        let tableView = UITableView()
-        cell.contentView.addSubview(tableView)
-        tableView.constraintEqualToSuperView()
+        let view =  dataView[indexPath.row]
+        cell.contentView.addSubview(view)
+        view.constraintEqualToSuperView()
 
         return cell
     }
