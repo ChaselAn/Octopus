@@ -15,6 +15,10 @@
 		F17A8A17218AE88A00031C79 /* Octopus.h in Headers */ = {isa = PBXBuildFile; fileRef = F17A8A15218AE88A00031C79 /* Octopus.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		F17A8A1A218AE88B00031C79 /* Octopus.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F17A8A13218AE88A00031C79 /* Octopus.framework */; };
 		F17A8A1B218AE88B00031C79 /* Octopus.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = F17A8A13218AE88A00031C79 /* Octopus.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		F17A8A21218AFDFD00031C79 /* OctopusView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F17A8A20218AFDFD00031C79 /* OctopusView.swift */; };
+		F17A8A23218B057A00031C79 /* OctopusListContainerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F17A8A22218B057A00031C79 /* OctopusListContainerView.swift */; };
+		F17A8A25218C3CC900031C79 /* OctopusUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = F17A8A24218C3CC900031C79 /* OctopusUtils.swift */; };
+		F17A8A27218C3ECE00031C79 /* OctopusDataViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F17A8A26218C3ECE00031C79 /* OctopusDataViewController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -52,6 +56,10 @@
 		F17A8A13218AE88A00031C79 /* Octopus.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Octopus.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		F17A8A15218AE88A00031C79 /* Octopus.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Octopus.h; sourceTree = "<group>"; };
 		F17A8A16218AE88A00031C79 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		F17A8A20218AFDFD00031C79 /* OctopusView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OctopusView.swift; sourceTree = "<group>"; };
+		F17A8A22218B057A00031C79 /* OctopusListContainerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OctopusListContainerView.swift; sourceTree = "<group>"; };
+		F17A8A24218C3CC900031C79 /* OctopusUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OctopusUtils.swift; sourceTree = "<group>"; };
+		F17A8A26218C3ECE00031C79 /* OctopusDataViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OctopusDataViewController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -108,6 +116,10 @@
 			isa = PBXGroup;
 			children = (
 				F17A8A15218AE88A00031C79 /* Octopus.h */,
+				F17A8A20218AFDFD00031C79 /* OctopusView.swift */,
+				F17A8A22218B057A00031C79 /* OctopusListContainerView.swift */,
+				F17A8A26218C3ECE00031C79 /* OctopusDataViewController.swift */,
+				F17A8A24218C3CC900031C79 /* OctopusUtils.swift */,
 				F17A8A16218AE88A00031C79 /* Info.plist */,
 			);
 			path = Octopus;
@@ -179,6 +191,7 @@
 					};
 					F17A8A12218AE88A00031C79 = {
 						CreatedOnToolsVersion = 10.0;
+						LastSwiftMigration = 1000;
 					};
 				};
 			};
@@ -235,6 +248,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F17A8A27218C3ECE00031C79 /* OctopusDataViewController.swift in Sources */,
+				F17A8A21218AFDFD00031C79 /* OctopusView.swift in Sources */,
+				F17A8A23218B057A00031C79 /* OctopusListContainerView.swift in Sources */,
+				F17A8A25218C3CC900031C79 /* OctopusUtils.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -387,6 +404,7 @@
 		F17A8A0C218AE64C00031C79 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = GY6E74AYN5;
@@ -405,6 +423,7 @@
 		F17A8A0D218AE64C00031C79 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = GY6E74AYN5;
@@ -423,6 +442,7 @@
 		F17A8A1D218AE88B00031C79 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_IDENTITY = "";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
@@ -441,6 +461,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.chaselan.Octopus;
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SKIP_INSTALL = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 4.2;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VERSIONING_SYSTEM = "apple-generic";
@@ -451,6 +472,7 @@
 		F17A8A1E218AE88B00031C79 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_IDENTITY = "";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
