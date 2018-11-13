@@ -38,13 +38,23 @@ class OctopusListContainerView: UIView {
         self.addSubview(collectionView)
         collectionView.constraintEqualToSuperView()
 
-        let firstView = TestTableView()
+
         firstView.dataSource = self
         firstView.backgroundColor = .green
-        let secondView = TestTableView()
+
         secondView.dataSource = self
         secondView.backgroundColor = .yellow
         dataView = [firstView, secondView]
+    }
+
+    let firstView = TestTableView()
+    let secondView = TestTableView()
+
+    override func layoutSubviews() {
+        super.layoutSubviews()
+
+        firstView.frame = self.bounds
+        secondView.frame = self.bounds
     }
 
     required init?(coder aDecoder: NSCoder) {
@@ -70,7 +80,6 @@ extension OctopusListContainerView: UICollectionViewDataSource {
         }
         let view = dataView[indexPath.row]
         cell.contentView.addSubview(view)
-        view.constraintEqualToSuperView()
 
         return cell
     }

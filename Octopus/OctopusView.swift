@@ -34,8 +34,8 @@ public class OctopusView: UIView {
     private let segmentViewHeight: CGFloat = 50
     private let headerViewHeight: CGFloat = 150
 
-    private lazy var tableView: TestMainTableView = {
-        let tableView = TestMainTableView(frame: CGRect.zero, style: .plain)
+    private lazy var tableView: OctopusMainTableView = {
+        let tableView = OctopusMainTableView(frame: CGRect.zero, style: .plain)
         tableView.showsVerticalScrollIndicator = false
         tableView.showsHorizontalScrollIndicator = false
         tableView.separatorStyle = .none
@@ -44,6 +44,7 @@ public class OctopusView: UIView {
         let headerView = UIView(frame: CGRect(x: 0, y: 0, width: UIScreen.main.bounds.width, height: headerViewHeight))
         headerView.backgroundColor = UIColor.red
         tableView.tableHeaderView = headerView
+        tableView.rowHeight = UITableView.automaticDimension
 //        tableView.tableHeaderView = delegate?.tableHeaderView(in: self)
         tableView.register(UITableViewCell.classForCoder(), forCellReuseIdentifier: "cell")
         return tableView
@@ -89,7 +90,12 @@ public class OctopusView: UIView {
         fatalError("init(coder:) has not been implemented")
     }
 
-    private func preferredProcessListViewDidScroll(scrollView: UIScrollView) {
+    public override func layoutSubviews() {
+        super.layoutSubviews()
+        listContainerView.heightAnchor.constraint(equalToConstant: tableView.bounds.height).isActive = true
+    }
+
+    private func preferredProcessListViewDidScroll(scrollView: UIScrollView) { 
         if tableView.contentOffset.y < headerViewHeight {
             //mainTableView的header还没有消失，让listScrollView一直为0
             guard let currentScrollingListView = currentScrollingListView else { return }
@@ -120,10 +126,10 @@ extension OctopusView: UITableViewDataSource {
         return cell
     }
 
-    public func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        layoutIfNeeded()
-        return bounds.height - segmentViewHeight - headerViewHeight
-    }
+//    public func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+//        layoutIfNeeded()
+//        return bounds.height
+//    }
 
     public func tableView(_ tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
         return 1
@@ -181,11 +187,11 @@ extension OctopusView: UITableViewDelegate {
     }
 }
 
-class TestMainTableView: UITableView, UIGestureRecognizerDelegate {
+class OctopusMainTableView: UITableView, UIGestureRecognizerDelegate {
 
     public func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldRecognizeSimultaneouslyWith otherGestureRecognizer: UIGestureRecognizer) -> Bool {
 
-            return gestureRecognizer.isKind(of: UIPanGestureRecognizer.classForCoder()) && otherGestureRecognizer.isKind(of: UIPanGestureRecognizer.classForCoder())
-        
+        return gestureRecognizer is UIPanGestureRecognizer && otherGestureRecognizer is UIPanGestureRecognizer
+
     }
 }
