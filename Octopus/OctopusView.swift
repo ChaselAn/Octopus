@@ -23,11 +23,14 @@ extension OctopusViewDelegate {
 public class OctopusView: UIView {
 
     public weak var delegate: OctopusViewDelegate?
-    public weak var targetVC: UIViewController?
 
-    public var contentInsetAdjustmentBehavior: UIScrollView.ContentInsetAdjustmentBehavior = .automatic {
-        didSet {
-            tableView.contentInsetAdjustmentBehavior = contentInsetAdjustmentBehavior
+    @available(iOS 11.0, *)
+    public var contentInsetAdjustmentBehavior: UIScrollView.ContentInsetAdjustmentBehavior {
+        get {
+            return tableView.contentInsetAdjustmentBehavior
+        }
+        set {
+            tableView.contentInsetAdjustmentBehavior = newValue
         }
     }
 

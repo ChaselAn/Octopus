@@ -16,8 +16,9 @@ class ViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        octopusView.contentInsetAdjustmentBehavior = .never
-        octopusView.targetVC = self
+        if #available(iOS 11.0, *) {
+            octopusView.contentInsetAdjustmentBehavior = .never
+        }
         view.addSubview(octopusView)
         octopusView.translatesAutoresizingMaskIntoConstraints = false
         octopusView.topAnchor.constraint(equalTo: view.topAnchor).isActive = true

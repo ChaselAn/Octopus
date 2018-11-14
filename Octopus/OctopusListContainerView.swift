@@ -42,6 +42,11 @@ class OctopusListContainerView: UIView {
         firstView.dataSource = self
         firstView.backgroundColor = .green
 
+        if #available(iOS 11.0, *) {
+            firstView.contentInsetAdjustmentBehavior = .never
+            secondView.contentInsetAdjustmentBehavior = .never
+        }
+
         secondView.dataSource = self
         secondView.backgroundColor = .yellow
         dataView = [firstView, secondView]
