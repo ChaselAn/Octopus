@@ -10,8 +10,8 @@ import UIKit
 
 public protocol OctopusViewDelegate: class {
 
-//    func tableHeaderView(in octopusView: OctopusView) -> UIView?
-//    func tableHeaderViewHeight(in octopusView: OctopusView) -> CGFloat
+    func tableHeaderView(in octopusView: OctopusView) -> UIView?
+    func tableHeaderViewHeight(in octopusView: OctopusView) -> CGFloat
 
 }
 
@@ -34,8 +34,9 @@ public class OctopusView: UIView {
         }
     }
 
-    private let segmentViewHeight: CGFloat = 50
-    private let headerViewHeight: CGFloat = 150
+    private var headerViewHeight: CGFloat {
+        return delegate?.tableHeaderViewHeight(in: self) ?? 0
+    }
 
     private lazy var tableView: OctopusMainTableView = {
         let tableView = OctopusMainTableView(frame: CGRect.zero, style: .plain)
@@ -44,12 +45,13 @@ public class OctopusView: UIView {
         tableView.separatorStyle = .none
         tableView.dataSource = self
         tableView.delegate = self
-        let headerView = UIView(frame: CGRect(x: 0, y: 0, width: UIScreen.main.bounds.width, height: headerViewHeight))
-        headerView.backgroundColor = UIColor.red
-        tableView.tableHeaderView = headerView
+        if let headerView = delegate?.tableHeaderView(in: self), let headerViewHeight = delegate?.tableHeaderViewHeight(in: self) {
+            headerView.frame = CGRect(x: 0, y: 0, width: 0, height: headerViewHeight)
+            tableView.tableHeaderView = headerView
+        }
+        tableView.estimatedRowHeight = UIScreen.main.bounds.height
         tableView.rowHeight = UITableView.automaticDimension
-//        tableView.tableHeaderView = delegate?.tableHeaderView(in: self)
-        tableView.register(UITableViewCell.classForCoder(), forCellReuseIdentifier: "cell")
+        tableView.register(UITableViewCell.classForCoder(), forCellReuseIdentifier: "OctopusViewCell")
         return tableView
     }()
 
@@ -60,23 +62,33 @@ public class OctopusView: UIView {
 
     override init(frame: CGRect) {
         super.init(frame: frame)
+    }
+
+    required init?(coder aDecoder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    public override func willMove(toSuperview newSuperview: UIView?) {
+        super.willMove(toSuperview: newSuperview)
+
+        guard newSuperview != nil else { return }
 
         addSubview(tableView)
         tableView.constraintEqualToSuperView()
 
         listContainerView.mainTableView = tableView
 
-//        let firstVC = OctopusDataViewController()
-//        let secondVC = OctopusDataViewController()
-//        let vcs: [UIViewController] = [firstVC, secondVC]
-//        let firstView = firstVC.tableView
-//        firstView.backgroundColor = UIColor.green
-//        let secondView = secondVC.tableView
-//        secondView.backgroundColor = UIColor.yellow
-//        listContainerView.dataView = [firstView, secondView]
-//        vcs.forEach({ [weak self] in
-//            self?.targetVC?.addChild($0)
-//        })
+        //        let firstVC = OctopusDataViewController()
+        //        let secondVC = OctopusDataViewController()
+        //        let vcs: [UIViewController] = [firstVC, secondVC]
+        //        let firstView = firstVC.tableView
+        //        firstView.backgroundColor = UIColor.green
+        //        let secondView = secondVC.tableView
+        //        secondView.backgroundColor = UIColor.yellow
+        //        listContainerView.dataView = [firstView, secondView]
+        //        vcs.forEach({ [weak self] in
+        //            self?.targetVC?.addChild($0)
+        //        })
 
         listContainerView.dataView.forEach({
             let observation = $0.observe(\.contentOffset, options: [.old, .new], changeHandler: { [weak self] (scrollView, change) in
@@ -89,26 +101,26 @@ public class OctopusView: UIView {
         })
     }
 
-    required init?(coder aDecoder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-
     public override func layoutSubviews() {
         super.layoutSubviews()
         listContainerView.heightAnchor.constraint(equalToConstant: tableView.bounds.height).isActive = true
     }
 
-    private func preferredProcessListViewDidScroll(scrollView: UIScrollView) { 
-        if tableView.contentOffset.y < headerViewHeight {
-            //mainTableView的header还没有消失，让listScrollView一直为0
+    private func preferredProcessListViewDidScroll(scrollView: UIScrollView) {
+        let contentInsetTop: CGFloat
+        if #available(iOS 11.0, *) {
+            contentInsetTop = tableView.adjustedContentInset.top
+        } else {
+            contentInsetTop = tableView.contentInset.top
+        }
+
+        if tableView.contentOffset.y < headerViewHeight - contentInsetTop {
             guard let currentScrollingListView = currentScrollingListView else { return }
-//            self.currentListView?.listScrollViewWillResetContentOffset?()
             currentScrollingListView.contentOffset = CGPoint.zero
             currentScrollingListView.showsVerticalScrollIndicator = false
         } else {
-            //mainTableView的header刚好消失，固定mainTableView的位置，显示listScrollView的滚动条
-            tableView.contentOffset = CGPoint(x: 0, y: headerViewHeight);
-            currentScrollingListView!.showsVerticalScrollIndicator = true;
+            tableView.contentOffset = CGPoint(x: 0, y: headerViewHeight - contentInsetTop)
+            currentScrollingListView!.showsVerticalScrollIndicator = true
         }
     }
 }
@@ -120,7 +132,7 @@ extension OctopusView: UITableViewDataSource {
     }
 
     public func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
+        let cell = tableView.dequeueReusableCell(withIdentifier: "OctopusViewCell", for: indexPath)
         for subview in cell.contentView.subviews {
             subview.removeFromSuperview()
         }
@@ -128,11 +140,6 @@ extension OctopusView: UITableViewDataSource {
         listContainerView.constraintEqualToSuperView()
         return cell
     }
-
-//    public func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-//        layoutIfNeeded()
-//        return bounds.height
-//    }
 
     public func tableView(_ tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
         return 1
@@ -148,8 +155,6 @@ extension OctopusView: UITableViewDataSource {
 extension OctopusView: UITableViewDelegate {
 
     public func scrollViewDidScroll(_ scrollView: UIScrollView) {
-//        self.delegate.mainTableViewDidScroll?(scrollView)
-        //用户正在上下滚动的时候，就不允许左右滚动
         if scrollView.isTracking {
             listContainerView.collectionView.isScrollEnabled = false
         }
@@ -158,22 +163,27 @@ extension OctopusView: UITableViewDelegate {
     }
 
     private func preferredProcessMainTableViewDidScroll(_ scrollView: UIScrollView) {
-        if let currentScrollingListView = currentScrollingListView, currentScrollingListView.contentOffset.y > 0 {
-            //mainTableView的header已经滚动不见，开始滚动某一个listView，那么固定mainTableView的contentOffset，让其不动
-            tableView.contentOffset = CGPoint(x: 0, y: headerViewHeight)
+
+        print("--------- ", tableView.contentOffset.y)
+        let contentInsetTop: CGFloat
+        if #available(iOS 11.0, *) {
+            contentInsetTop = tableView.adjustedContentInset.top
+        } else {
+            contentInsetTop = tableView.contentInset.top
         }
 
-        if tableView.contentOffset.y < headerViewHeight {
-            //mainTableView已经显示了header，listView的contentOffset需要重置
+        if let currentScrollingListView = currentScrollingListView, currentScrollingListView.contentOffset.y > 0 {
+            tableView.contentOffset = CGPoint(x: 0, y: headerViewHeight - contentInsetTop)
+        }
+
+        if tableView.contentOffset.y < headerViewHeight - contentInsetTop {
             for scrollView in listContainerView.dataView {
-//                listView.listScrollViewWillResetContentOffset?()
                 scrollView.contentOffset = CGPoint.zero
             }
         }
 
-        if scrollView.contentOffset.y > headerViewHeight && currentScrollingListView?.contentOffset.y == 0 {
-            //当往上滚动mainTableView的headerView时，滚动到底时，修复listView往上小幅度滚动
-            tableView.contentOffset = CGPoint(x: 0, y: headerViewHeight)
+        if scrollView.contentOffset.y > headerViewHeight - contentInsetTop && currentScrollingListView?.contentOffset.y == 0 {
+            tableView.contentOffset = CGPoint(x: 0, y: headerViewHeight - contentInsetTop)
         }
     }
 

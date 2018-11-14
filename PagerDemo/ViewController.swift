@@ -7,24 +7,12 @@
 //
 
 import UIKit
-import Octopus
+
 
 class ViewController: UIViewController {
 
-    private let octopusView = OctopusView()
-
-    override func viewDidLoad() {
-        super.viewDidLoad()
-
-        if #available(iOS 11.0, *) {
-            octopusView.contentInsetAdjustmentBehavior = .never
-        }
-        view.addSubview(octopusView)
-        octopusView.translatesAutoresizingMaskIntoConstraints = false
-        octopusView.topAnchor.constraint(equalTo: view.topAnchor).isActive = true
-        octopusView.leadingAnchor.constraint(equalTo: view.leadingAnchor).isActive = true
-        octopusView.trailingAnchor.constraint(equalTo: view.trailingAnchor).isActive = true
-        octopusView.bottomAnchor.constraint(equalTo: view.bottomAnchor).isActive = true
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+        navigationController?.pushViewController(SegmentViewController(), animated: true)
     }
 
 }

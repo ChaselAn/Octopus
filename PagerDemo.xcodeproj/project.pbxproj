@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		F16F8556219C20E3009BC990 /* SegmentViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F16F8555219C20E3009BC990 /* SegmentViewController.swift */; };
 		F17A89FD218AE64B00031C79 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F17A89FC218AE64B00031C79 /* AppDelegate.swift */; };
 		F17A89FF218AE64B00031C79 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F17A89FE218AE64B00031C79 /* ViewController.swift */; };
 		F17A8A02218AE64B00031C79 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = F17A8A00218AE64B00031C79 /* Main.storyboard */; };
@@ -46,6 +47,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		F16F8555219C20E3009BC990 /* SegmentViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SegmentViewController.swift; sourceTree = "<group>"; };
 		F17A89F9218AE64B00031C79 /* PagerDemo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PagerDemo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		F17A89FC218AE64B00031C79 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		F17A89FE218AE64B00031C79 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -104,6 +106,7 @@
 			children = (
 				F17A89FC218AE64B00031C79 /* AppDelegate.swift */,
 				F17A89FE218AE64B00031C79 /* ViewController.swift */,
+				F16F8555219C20E3009BC990 /* SegmentViewController.swift */,
 				F17A8A00218AE64B00031C79 /* Main.storyboard */,
 				F17A8A03218AE64C00031C79 /* Assets.xcassets */,
 				F17A8A05218AE64C00031C79 /* LaunchScreen.storyboard */,
@@ -240,6 +243,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				F17A89FF218AE64B00031C79 /* ViewController.swift in Sources */,
+				F16F8556219C20E3009BC990 /* SegmentViewController.swift in Sources */,
 				F17A89FD218AE64B00031C79 /* AppDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
