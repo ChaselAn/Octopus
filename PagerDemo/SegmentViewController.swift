@@ -34,6 +34,8 @@ class SegmentViewController: UIViewController {
         octopusView.updateSegmentViewHeight(animated: true)
     }
 
+    private var vcs: [Int: OctopusDataViewController] = [:]
+
 }
 
 extension SegmentViewController: OctopusViewDataSource {
@@ -42,9 +44,12 @@ extension SegmentViewController: OctopusViewDataSource {
     }
 
     func octopusView(_ octopusView: OctopusView, pageViewControllerAt index: Int) -> OctopusPage {
-        let vc = OctopusDataViewController.init(scrollView: TestTableView())
-        addChild(vc)
+        if let cacheVC = vcs[index] {
+            return cacheVC
+        }
+        let vc = OctopusDataViewController(scrollView: TestTableView())
         vc.index = index
+        vcs[index] = vc
         return vc
     }
 

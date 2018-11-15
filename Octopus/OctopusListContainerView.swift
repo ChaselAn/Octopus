@@ -131,5 +131,4 @@ extension OctopusListContainerView: UITableViewDataSource {
 class OctopusPageCell: UICollectionViewCell {
     var octopusPageScrollView: UIScrollView?
 
-    
 }
