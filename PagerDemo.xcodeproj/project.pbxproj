@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		F16F8556219C20E3009BC990 /* SegmentViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F16F8555219C20E3009BC990 /* SegmentViewController.swift */; };
+		F177D454219D5646007E664C /* OctopusDataViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F17A8A26218C3ECE00031C79 /* OctopusDataViewController.swift */; };
 		F17A89FD218AE64B00031C79 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F17A89FC218AE64B00031C79 /* AppDelegate.swift */; };
 		F17A89FF218AE64B00031C79 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F17A89FE218AE64B00031C79 /* ViewController.swift */; };
 		F17A8A02218AE64B00031C79 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = F17A8A00218AE64B00031C79 /* Main.storyboard */; };
@@ -19,7 +20,6 @@
 		F17A8A21218AFDFD00031C79 /* OctopusView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F17A8A20218AFDFD00031C79 /* OctopusView.swift */; };
 		F17A8A23218B057A00031C79 /* OctopusListContainerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F17A8A22218B057A00031C79 /* OctopusListContainerView.swift */; };
 		F17A8A25218C3CC900031C79 /* OctopusUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = F17A8A24218C3CC900031C79 /* OctopusUtils.swift */; };
-		F17A8A27218C3ECE00031C79 /* OctopusDataViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F17A8A26218C3ECE00031C79 /* OctopusDataViewController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -107,6 +107,7 @@
 				F17A89FC218AE64B00031C79 /* AppDelegate.swift */,
 				F17A89FE218AE64B00031C79 /* ViewController.swift */,
 				F16F8555219C20E3009BC990 /* SegmentViewController.swift */,
+				F17A8A26218C3ECE00031C79 /* OctopusDataViewController.swift */,
 				F17A8A00218AE64B00031C79 /* Main.storyboard */,
 				F17A8A03218AE64C00031C79 /* Assets.xcassets */,
 				F17A8A05218AE64C00031C79 /* LaunchScreen.storyboard */,
@@ -121,7 +122,6 @@
 				F17A8A15218AE88A00031C79 /* Octopus.h */,
 				F17A8A20218AFDFD00031C79 /* OctopusView.swift */,
 				F17A8A22218B057A00031C79 /* OctopusListContainerView.swift */,
-				F17A8A26218C3ECE00031C79 /* OctopusDataViewController.swift */,
 				F17A8A24218C3CC900031C79 /* OctopusUtils.swift */,
 				F17A8A16218AE88A00031C79 /* Info.plist */,
 			);
@@ -242,6 +242,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F177D454219D5646007E664C /* OctopusDataViewController.swift in Sources */,
 				F17A89FF218AE64B00031C79 /* ViewController.swift in Sources */,
 				F16F8556219C20E3009BC990 /* SegmentViewController.swift in Sources */,
 				F17A89FD218AE64B00031C79 /* AppDelegate.swift in Sources */,
@@ -252,7 +253,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F17A8A27218C3ECE00031C79 /* OctopusDataViewController.swift in Sources */,
 				F17A8A21218AFDFD00031C79 /* OctopusView.swift in Sources */,
 				F17A8A23218B057A00031C79 /* OctopusListContainerView.swift in Sources */,
 				F17A8A25218C3CC900031C79 /* OctopusUtils.swift in Sources */,

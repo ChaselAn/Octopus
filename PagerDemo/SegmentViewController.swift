@@ -12,6 +12,7 @@ import Octopus
 class SegmentViewController: UIViewController {
 
     private let octopusView = OctopusView()
+    private var isShowAll: Bool = false
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -28,26 +29,43 @@ class SegmentViewController: UIViewController {
         octopusView.bottomAnchor.constraint(equalTo: view.bottomAnchor).isActive = true
     }
 
+    @objc private func segmentViewClicked() {
+        isShowAll = !isShowAll
+        octopusView.updateSegmentViewHeight(animated: true)
+    }
+
 }
 
 extension SegmentViewController: OctopusViewDataSource {
-    func tableHeaderView(in octopusView: OctopusView) -> UIView? {
+    func numberOfPages(in octopusView: OctopusView) -> Int {
+        return 10
+    }
+
+    func octopusView(_ octopusView: OctopusView, pageViewControllerAt index: Int) -> OctopusPage {
+        let vc = OctopusDataViewController.init(scrollView: TestTableView())
+        addChild(vc)
+        vc.index = index
+        return vc
+    }
+
+    func headerView(in octopusView: OctopusView) -> UIView? {
         let view = UIView()
         view.backgroundColor = .red
         return view
     }
 
-    func tableHeaderViewHeight(in octopusView: OctopusView) -> CGFloat {
+    func headerViewHeight(in octopusView: OctopusView) -> CGFloat {
         return 150
     }
 
-    func tableSegmentView(in octopusView: OctopusView) -> UIView? {
+    func segmentView(in octopusView: OctopusView) -> UIView? {
         let view = UIView()
         view.backgroundColor = .green
+        view.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(segmentViewClicked)))
         return view
     }
 
-    func tableSegmentViewHeight(in octopusView: OctopusView) -> CGFloat {
-        return 50
+    func segmentViewHeight(in octopusView: OctopusView) -> CGFloat {
+        return isShowAll ? 100 : 50
     }
 }

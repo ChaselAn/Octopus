@@ -12,12 +12,11 @@ class OctopusListContainerView: UIView {
 
     var collectionView: UICollectionView!
     weak var mainTableView: UITableView?
+    var dataViewsCount: (() -> Int)?
+    var dataView: ((Int) -> OctopusPage?)?
+    var dataViewDidScroll: ((UIScrollView) -> Void)?
 
-    var dataView: [UIScrollView] = [] {
-        didSet {
-//            collectionView.reloadData()
-        }
-    }
+    var observations: [UIScrollView: NSKeyValueObservation] = [:]
 
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -34,32 +33,15 @@ class OctopusListContainerView: UIView {
         collectionView.bounces = false
         collectionView.dataSource = self
         collectionView.delegate = self
-        collectionView.register(UICollectionViewCell.classForCoder(), forCellWithReuseIdentifier: "cell")
+        collectionView.register(OctopusPageCell.classForCoder(), forCellWithReuseIdentifier: "OctopusPageCell")
         self.addSubview(collectionView)
         collectionView.constraintEqualToSuperView()
-
-
-        firstView.dataSource = self
-        firstView.backgroundColor = .green
-
-        if #available(iOS 11.0, *) {
-            firstView.contentInsetAdjustmentBehavior = .never
-            secondView.contentInsetAdjustmentBehavior = .never
-        }
-
-        secondView.dataSource = self
-        secondView.backgroundColor = .yellow
-        dataView = [firstView, secondView]
     }
-
-    let firstView = TestTableView()
-    let secondView = TestTableView()
 
     override func layoutSubviews() {
         super.layoutSubviews()
 
-        firstView.frame = self.bounds
-        secondView.frame = self.bounds
+        observations.keys.forEach({ $0.frame = self.bounds })
     }
 
     required init?(coder aDecoder: NSCoder) {
@@ -75,16 +57,28 @@ class OctopusListContainerView: UIView {
 extension OctopusListContainerView: UICollectionViewDataSource {
 
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return dataView.count
+        return dataViewsCount?() ?? 0
     }
 
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "cell", for: indexPath)
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "OctopusPageCell", for: indexPath) as! OctopusPageCell
         for view in cell.contentView.subviews {
+            if let scrollView = cell.octopusPageScrollView {
+                observations[scrollView] = nil
+            }
             view.removeFromSuperview()
         }
-        let view = dataView[indexPath.row]
+        guard let vc = dataView?(indexPath.row), let view = vc.view else { return cell }
         cell.contentView.addSubview(view)
+        let scrollView = vc.scrollView
+            cell.octopusPageScrollView = scrollView
+            let observation = scrollView.observe(\.contentOffset, options: [.old, .new], changeHandler: { [weak self] (scrollView, change) in
+                guard let strongSelf = self else { return }
+                guard change.oldValue != change.newValue else { return }
+                strongSelf.dataViewDidScroll?(scrollView)
+            })
+            observations[scrollView] = observation
+        
 
         return cell
     }
@@ -132,4 +126,10 @@ extension OctopusListContainerView: UITableViewDataSource {
         cell.textLabel?.text = "\(indexPath.row)"
         return cell
     }
+}
+
+class OctopusPageCell: UICollectionViewCell {
+    var octopusPageScrollView: UIScrollView?
+
+    
 }

@@ -8,22 +8,37 @@
 
 import UIKit
 
+open class OctopusPage: UIViewController {
+    open var scrollView: UITableView
+
+    public init(scrollView: UITableView) {
+        self.scrollView = scrollView
+        super.init(nibName: nil, bundle: nil)
+    }
+
+    public required init?(coder aDecoder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+}
 public protocol OctopusViewDataSource: class {
 
-    func tableHeaderView(in octopusView: OctopusView) -> UIView?
-    func tableHeaderViewHeight(in octopusView: OctopusView) -> CGFloat
+    func numberOfPages(in octopusView: OctopusView) -> Int
+    func octopusView(_ octopusView: OctopusView, pageViewControllerAt index: Int) -> OctopusPage
 
-    func tableSegmentView(in octopusView: OctopusView) -> UIView?
-    func tableSegmentViewHeight(in octopusView: OctopusView) -> CGFloat
+    func headerView(in octopusView: OctopusView) -> UIView?
+    func headerViewHeight(in octopusView: OctopusView) -> CGFloat
+
+    func segmentView(in octopusView: OctopusView) -> UIView?
+    func segmentViewHeight(in octopusView: OctopusView) -> CGFloat
 
 }
 
 public extension OctopusViewDataSource {
-    func tableHeaderView(in octopusView: OctopusView) -> UIView? { return nil }
-    func tableHeaderViewHeight(in octopusView: OctopusView) -> CGFloat { return 0 }
+    func headerView(in octopusView: OctopusView) -> UIView? { return nil }
+    func headerViewHeight(in octopusView: OctopusView) -> CGFloat { return 0 }
 
-    func tableSegmentView(in octopusView: OctopusView) -> UIView? { return nil }
-    func tableSegmentViewHeight(in octopusView: OctopusView) -> CGFloat { return 0 }
+    func segmentView(in octopusView: OctopusView) -> UIView? { return nil }
+    func segmentViewHeight(in octopusView: OctopusView) -> CGFloat { return 0 }
 }
 
 public class OctopusView: UIView {
@@ -49,13 +64,45 @@ public class OctopusView: UIView {
         }
     }
 
+    public func reloadData() {
+        listContainerView.reloadData()
+        tableView.reloadData()
+    }
+
+    public func updateSegmentViewHeight(animated: Bool) {
+        guard dataSource?.segmentView(in: self) != nil else {
+            return
+        }
+        if animated {
+            tableView.beginUpdates()
+            UIView.animate(withDuration: 0.3) { [weak self] in
+                guard let strongSelf = self else { return }
+                strongSelf.segmentViewHeightConstraint?.constant = strongSelf.segmentViewHeight
+                strongSelf.tableView.tableHeaderView?.frame.size.height = strongSelf.headerViewTotalHeight
+                strongSelf.realHeaderView.layoutIfNeeded()
+            }
+            tableView.endUpdates()
+        } else {
+            segmentViewHeightConstraint?.constant = segmentViewHeight
+        }
+    }
+
+    private var headerViewTotalHeight: CGFloat {
+        return headerViewHeight + segmentViewHeight
+    }
+
     private var headerViewHeight: CGFloat {
-        return dataSource?.tableHeaderViewHeight(in: self) ?? 0
+        guard dataSource?.headerView(in: self) != nil else { return 0 }
+        return dataSource?.headerViewHeight(in: self) ?? 0
     }
 
     private var segmentViewHeight: CGFloat {
-        return dataSource?.tableSegmentViewHeight(in: self) ?? 0
+        guard dataSource?.segmentView(in: self) != nil else { return 0 }
+        return dataSource?.segmentViewHeight(in: self) ?? 0
     }
+
+    private lazy var realHeaderView = UIView()
+    private var segmentViewHeightConstraint: NSLayoutConstraint?
 
     private lazy var tableView: OctopusMainTableView = {
         let tableView = OctopusMainTableView(frame: CGRect.zero, style: .plain)
@@ -72,7 +119,6 @@ public class OctopusView: UIView {
     }()
 
     private var listContainerView = OctopusListContainerView()
-    private var observations: [NSKeyValueObservation] = []
 
     private var currentScrollingListView: UIScrollView?
 
@@ -93,16 +139,20 @@ public class OctopusView: UIView {
         tableView.constraintEqualToSuperView()
 
         listContainerView.mainTableView = tableView
-
-        listContainerView.dataView.forEach({
-            let observation = $0.observe(\.contentOffset, options: [.old, .new], changeHandler: { [weak self] (scrollView, change) in
-                guard let strongSelf = self else { return }
-                guard change.oldValue != change.newValue else { return }
-                strongSelf.currentScrollingListView = scrollView
-                strongSelf.preferredProcessListViewDidScroll(scrollView: scrollView)
-            })
-            observations.append(observation)
-        })
+        listContainerView.dataViewsCount = { [weak self] in
+            guard let strongSelf = self else { return 0 }
+            return strongSelf.dataSource?.numberOfPages(in: strongSelf) ?? 0
+        }
+        listContainerView.dataView = { [weak self] index in
+            guard let strongSelf = self else { return nil }
+            let vc = strongSelf.dataSource?.octopusView(strongSelf, pageViewControllerAt: index)
+            return vc
+        }
+        listContainerView.dataViewDidScroll = { [weak self] scrollView in
+            guard let strongSelf = self else { return }
+            strongSelf.currentScrollingListView = scrollView
+            strongSelf.preferredProcessListViewDidScroll(scrollView: scrollView)
+        }
     }
 
     public override func layoutSubviews() {
@@ -111,27 +161,26 @@ public class OctopusView: UIView {
     }
 
     private func setupHeaderView(_ tableView: UITableView) {
-        let realHeaderView = UIView()
-        realHeaderView.frame = CGRect(x: 0, y: 0, width: 0, height: 0)
-        if let headerView = dataSource?.tableHeaderView(in: self) {
+        realHeaderView.subviews.forEach({ $0.removeFromSuperview() })
+        if let headerView = dataSource?.headerView(in: self) {
             realHeaderView.addSubview(headerView)
             headerView.translatesAutoresizingMaskIntoConstraints = false
             headerView.topAnchor.constraint(equalTo: realHeaderView.topAnchor).isActive = true
             headerView.leadingAnchor.constraint(equalTo: realHeaderView.leadingAnchor).isActive = true
             headerView.trailingAnchor.constraint(equalTo: realHeaderView.trailingAnchor).isActive = true
             headerView.heightAnchor.constraint(equalToConstant: headerViewHeight).isActive = true
-            realHeaderView.frame.size.height += headerViewHeight
         }
-        if let segmentView = dataSource?.tableSegmentView(in: self) {
+        if let segmentView = dataSource?.segmentView(in: self) {
             realHeaderView.addSubview(segmentView)
             segmentView.translatesAutoresizingMaskIntoConstraints = false
             segmentView.bottomAnchor.constraint(equalTo: realHeaderView.bottomAnchor).isActive = true
             segmentView.leadingAnchor.constraint(equalTo: realHeaderView.leadingAnchor).isActive = true
             segmentView.trailingAnchor.constraint(equalTo: realHeaderView.trailingAnchor).isActive = true
-            segmentView.heightAnchor.constraint(equalToConstant: segmentViewHeight).isActive = true
-            realHeaderView.frame.size.height += segmentViewHeight
+            segmentViewHeightConstraint = segmentView.heightAnchor.constraint(equalToConstant: segmentViewHeight)
+            segmentViewHeightConstraint!.isActive = true
         }
 
+        realHeaderView.frame = CGRect(x: 0, y: 0, width: 0, height: headerViewTotalHeight)
         tableView.tableHeaderView = realHeaderView
     }
 
@@ -205,12 +254,12 @@ extension OctopusView: UITableViewDelegate {
         }
 
         if tableView.contentOffset.y < headerViewHeight - contentInsetTop {
-            for scrollView in listContainerView.dataView {
-                scrollView.contentOffset = CGPoint.zero
-            }
+            listContainerView.observations.keys.forEach({
+                $0.contentOffset = CGPoint.zero
+            })
         }
 
-        if scrollView.contentOffset.y > headerViewHeight - contentInsetTop && currentScrollingListView?.contentOffset.y == 0 {
+        if scrollView.contentOffset.y > headerViewHeight - contentInsetTop && (currentScrollingListView?.contentOffset.y ?? 0) == 0 {
             tableView.contentOffset = CGPoint(x: 0, y: headerViewHeight - contentInsetTop)
         }
     }
