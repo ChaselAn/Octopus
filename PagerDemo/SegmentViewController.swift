@@ -19,7 +19,7 @@ class SegmentViewController: UIViewController {
 //        if #available(iOS 11.0, *) {
 //            octopusView.contentInsetAdjustmentBehavior = .never
 //        }
-        octopusView.delegate = self
+        octopusView.dataSource = self
         view.addSubview(octopusView)
         octopusView.translatesAutoresizingMaskIntoConstraints = false
         octopusView.topAnchor.constraint(equalTo: view.topAnchor).isActive = true
@@ -30,7 +30,7 @@ class SegmentViewController: UIViewController {
 
 }
 
-extension SegmentViewController: OctopusViewDelegate {
+extension SegmentViewController: OctopusViewDataSource {
     func tableHeaderView(in octopusView: OctopusView) -> UIView? {
         let view = UIView()
         view.backgroundColor = .red
@@ -39,5 +39,15 @@ extension SegmentViewController: OctopusViewDelegate {
 
     func tableHeaderViewHeight(in octopusView: OctopusView) -> CGFloat {
         return 150
+    }
+
+    func tableSegmentView(in octopusView: OctopusView) -> UIView? {
+        let view = UIView()
+        view.backgroundColor = .green
+        return view
+    }
+
+    func tableSegmentViewHeight(in octopusView: OctopusView) -> CGFloat {
+        return 50
     }
 }

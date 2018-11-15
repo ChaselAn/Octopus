@@ -8,21 +8,27 @@
 
 import UIKit
 
-public protocol OctopusViewDelegate: class {
+public protocol OctopusViewDataSource: class {
 
     func tableHeaderView(in octopusView: OctopusView) -> UIView?
     func tableHeaderViewHeight(in octopusView: OctopusView) -> CGFloat
 
+    func tableSegmentView(in octopusView: OctopusView) -> UIView?
+    func tableSegmentViewHeight(in octopusView: OctopusView) -> CGFloat
+
 }
 
-extension OctopusViewDelegate {
+public extension OctopusViewDataSource {
     func tableHeaderView(in octopusView: OctopusView) -> UIView? { return nil }
     func tableHeaderViewHeight(in octopusView: OctopusView) -> CGFloat { return 0 }
+
+    func tableSegmentView(in octopusView: OctopusView) -> UIView? { return nil }
+    func tableSegmentViewHeight(in octopusView: OctopusView) -> CGFloat { return 0 }
 }
 
 public class OctopusView: UIView {
 
-    public weak var delegate: OctopusViewDelegate?
+    public weak var dataSource: OctopusViewDataSource?
 
     @available(iOS 11.0, *)
     public var contentInsetAdjustmentBehavior: UIScrollView.ContentInsetAdjustmentBehavior {
@@ -34,8 +40,21 @@ public class OctopusView: UIView {
         }
     }
 
+    public var contentInset: UIEdgeInsets {
+        get {
+            return tableView.contentInset
+        }
+        set {
+            tableView.contentInset = newValue
+        }
+    }
+
     private var headerViewHeight: CGFloat {
-        return delegate?.tableHeaderViewHeight(in: self) ?? 0
+        return dataSource?.tableHeaderViewHeight(in: self) ?? 0
+    }
+
+    private var segmentViewHeight: CGFloat {
+        return dataSource?.tableSegmentViewHeight(in: self) ?? 0
     }
 
     private lazy var tableView: OctopusMainTableView = {
@@ -45,10 +64,7 @@ public class OctopusView: UIView {
         tableView.separatorStyle = .none
         tableView.dataSource = self
         tableView.delegate = self
-        if let headerView = delegate?.tableHeaderView(in: self), let headerViewHeight = delegate?.tableHeaderViewHeight(in: self) {
-            headerView.frame = CGRect(x: 0, y: 0, width: 0, height: headerViewHeight)
-            tableView.tableHeaderView = headerView
-        }
+        setupHeaderView(tableView)
         tableView.estimatedRowHeight = UIScreen.main.bounds.height
         tableView.rowHeight = UITableView.automaticDimension
         tableView.register(UITableViewCell.classForCoder(), forCellReuseIdentifier: "OctopusViewCell")
@@ -78,18 +94,6 @@ public class OctopusView: UIView {
 
         listContainerView.mainTableView = tableView
 
-        //        let firstVC = OctopusDataViewController()
-        //        let secondVC = OctopusDataViewController()
-        //        let vcs: [UIViewController] = [firstVC, secondVC]
-        //        let firstView = firstVC.tableView
-        //        firstView.backgroundColor = UIColor.green
-        //        let secondView = secondVC.tableView
-        //        secondView.backgroundColor = UIColor.yellow
-        //        listContainerView.dataView = [firstView, secondView]
-        //        vcs.forEach({ [weak self] in
-        //            self?.targetVC?.addChild($0)
-        //        })
-
         listContainerView.dataView.forEach({
             let observation = $0.observe(\.contentOffset, options: [.old, .new], changeHandler: { [weak self] (scrollView, change) in
                 guard let strongSelf = self else { return }
@@ -104,6 +108,31 @@ public class OctopusView: UIView {
     public override func layoutSubviews() {
         super.layoutSubviews()
         listContainerView.heightAnchor.constraint(equalToConstant: tableView.bounds.height).isActive = true
+    }
+
+    private func setupHeaderView(_ tableView: UITableView) {
+        let realHeaderView = UIView()
+        realHeaderView.frame = CGRect(x: 0, y: 0, width: 0, height: 0)
+        if let headerView = dataSource?.tableHeaderView(in: self) {
+            realHeaderView.addSubview(headerView)
+            headerView.translatesAutoresizingMaskIntoConstraints = false
+            headerView.topAnchor.constraint(equalTo: realHeaderView.topAnchor).isActive = true
+            headerView.leadingAnchor.constraint(equalTo: realHeaderView.leadingAnchor).isActive = true
+            headerView.trailingAnchor.constraint(equalTo: realHeaderView.trailingAnchor).isActive = true
+            headerView.heightAnchor.constraint(equalToConstant: headerViewHeight).isActive = true
+            realHeaderView.frame.size.height += headerViewHeight
+        }
+        if let segmentView = dataSource?.tableSegmentView(in: self) {
+            realHeaderView.addSubview(segmentView)
+            segmentView.translatesAutoresizingMaskIntoConstraints = false
+            segmentView.bottomAnchor.constraint(equalTo: realHeaderView.bottomAnchor).isActive = true
+            segmentView.leadingAnchor.constraint(equalTo: realHeaderView.leadingAnchor).isActive = true
+            segmentView.trailingAnchor.constraint(equalTo: realHeaderView.trailingAnchor).isActive = true
+            segmentView.heightAnchor.constraint(equalToConstant: segmentViewHeight).isActive = true
+            realHeaderView.frame.size.height += segmentViewHeight
+        }
+
+        tableView.tableHeaderView = realHeaderView
     }
 
     private func preferredProcessListViewDidScroll(scrollView: UIScrollView) {
@@ -164,7 +193,6 @@ extension OctopusView: UITableViewDelegate {
 
     private func preferredProcessMainTableViewDidScroll(_ scrollView: UIScrollView) {
 
-        print("--------- ", tableView.contentOffset.y)
         let contentInsetTop: CGFloat
         if #available(iOS 11.0, *) {
             contentInsetTop = tableView.adjustedContentInset.top
