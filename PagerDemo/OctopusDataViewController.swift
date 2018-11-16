@@ -9,8 +9,16 @@
 import UIKit
 import Octopus
 
-class OctopusDataViewController: OctopusPage {
+class OctopusDataViewController: UIViewController, OctopusPage {
+    func containerView() -> UIView {
+        return view
+    }
 
+    func scrollViewInContainerView() -> UIScrollView {
+        return tableView
+    }
+
+    var tableView = UITableView()
     var index: Int = 0
 
     private var counts = 0
@@ -34,11 +42,11 @@ class OctopusDataViewController: OctopusPage {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        scrollView.dataSource = self
-        scrollView.rowHeight = 50
-        scrollView.register(UITableViewCell.self, forCellReuseIdentifier: "testCell")
-        view.addSubview(scrollView)
-        scrollView.constraintEqualToSuperView()
+        tableView.dataSource = self
+        tableView.rowHeight = 50
+        tableView.register(UITableViewCell.self, forCellReuseIdentifier: "testCell")
+        view.addSubview(tableView)
+        tableView.constraintEqualToSuperView()
     }
 }
 

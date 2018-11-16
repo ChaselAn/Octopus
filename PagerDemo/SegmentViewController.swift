@@ -47,7 +47,7 @@ extension SegmentViewController: OctopusViewDataSource {
         if let cacheVC = vcs[index] {
             return cacheVC
         }
-        let vc = OctopusDataViewController(scrollView: TestTableView())
+        let vc = OctopusDataViewController()
         vc.index = index
         vcs[index] = vc
         return vc

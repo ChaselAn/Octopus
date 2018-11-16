@@ -8,18 +8,18 @@
 
 import UIKit
 
-open class OctopusPage: UIViewController {
-    open var scrollView: UITableView
+public protocol OctopusPage {
+    func containerView() -> UIView
 
-    public init(scrollView: UITableView) {
-        self.scrollView = scrollView
-        super.init(nibName: nil, bundle: nil)
-    }
+    func scrollViewInContainerView() -> UIScrollView
+}
 
-    public required init?(coder aDecoder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
+extension OctopusPage {
+    func scrollViewInContainerView() -> UIScrollView {
+        return OctopusExceptionView()
     }
 }
+
 public protocol OctopusViewDataSource: class {
 
     func numberOfPages(in octopusView: OctopusView) -> Int
@@ -139,15 +139,27 @@ public class OctopusView: UIView {
         tableView.constraintEqualToSuperView()
 
         listContainerView.mainTableView = tableView
-        listContainerView.dataViewsCount = { [weak self] in
-            guard let strongSelf = self else { return 0 }
-            return strongSelf.dataSource?.numberOfPages(in: strongSelf) ?? 0
+
+
+        if let dataSource = dataSource {
+            listContainerView.dataViewsCount = { [weak self] in
+                guard let strongSelf = self else { return 0 }
+                return dataSource.numberOfPages(in: strongSelf)
+            }
+
+            listContainerView.dataContainerView = { [weak self] index in
+                guard let strongSelf = self else { return OctopusExceptionView() }
+                let page = dataSource.octopusView(strongSelf, pageViewControllerAt: index)
+                return page.containerView()
+            }
+
+            listContainerView.dataScrollView = { [weak self] index in
+                guard let strongSelf = self else { return OctopusExceptionView() }
+                let page = dataSource.octopusView(strongSelf, pageViewControllerAt: index)
+                return page.scrollViewInContainerView()
+            }
         }
-        listContainerView.dataView = { [weak self] index in
-            guard let strongSelf = self else { return nil }
-            let vc = strongSelf.dataSource?.octopusView(strongSelf, pageViewControllerAt: index)
-            return vc
-        }
+
         listContainerView.dataViewDidScroll = { [weak self] scrollView in
             guard let strongSelf = self else { return }
             strongSelf.currentScrollingListView = scrollView
@@ -284,4 +296,8 @@ class OctopusMainTableView: UITableView, UIGestureRecognizerDelegate {
         return gestureRecognizer is UIPanGestureRecognizer && otherGestureRecognizer is UIPanGestureRecognizer
 
     }
+}
+
+class OctopusExceptionView: UIScrollView {
+
 }

@@ -13,7 +13,8 @@ class OctopusListContainerView: UIView {
     var collectionView: UICollectionView!
     weak var mainTableView: UITableView?
     var dataViewsCount: (() -> Int)?
-    var dataView: ((Int) -> OctopusPage?)?
+    var dataContainerView: ((Int) -> UIView)?
+    var dataScrollView: ((Int) -> UIScrollView)?
     var dataViewDidScroll: ((UIScrollView) -> Void)?
 
     var observations: [UIScrollView: NSKeyValueObservation] = [:]
@@ -68,9 +69,9 @@ extension OctopusListContainerView: UICollectionViewDataSource {
             }
             view.removeFromSuperview()
         }
-        guard let vc = dataView?(indexPath.row), let view = vc.view else { return cell }
-        cell.contentView.addSubview(view)
-        let scrollView = vc.scrollView
+        guard let containerView = dataContainerView?(indexPath.row) else { return cell }
+        cell.contentView.addSubview(containerView)
+        if let scrollView = dataScrollView?(indexPath.row) {
             cell.octopusPageScrollView = scrollView
             let observation = scrollView.observe(\.contentOffset, options: [.old, .new], changeHandler: { [weak self] (scrollView, change) in
                 guard let strongSelf = self else { return }
@@ -78,7 +79,7 @@ extension OctopusListContainerView: UICollectionViewDataSource {
                 strongSelf.dataViewDidScroll?(scrollView)
             })
             observations[scrollView] = observation
-        
+        }
 
         return cell
     }
