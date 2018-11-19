@@ -199,7 +199,8 @@ public class OctopusView: UIView {
 extension OctopusView: UITableViewDataSource {
 
     public func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return 1
+        guard let source = dataSource else { return 0 }
+        return source.numberOfPages(in: self) > 0 ? 1 : 0
     }
 
     public func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
