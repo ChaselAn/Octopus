@@ -45,24 +45,19 @@ public class OctopusView: UIView {
 
     public weak var dataSource: OctopusViewDataSource?
 
-    @available(iOS 11.0, *)
-    public var contentInsetAdjustmentBehavior: UIScrollView.ContentInsetAdjustmentBehavior {
-        get {
-            return tableView.contentInsetAdjustmentBehavior
-        }
-        set {
-            tableView.contentInsetAdjustmentBehavior = newValue
-        }
-    }
-
-    public var contentInset: UIEdgeInsets {
-        get {
-            return tableView.contentInset
-        }
-        set {
-            tableView.contentInset = newValue
-        }
-    }
+    public lazy var tableView: OctopusMainTableView = {
+        let tableView = OctopusMainTableView(frame: CGRect.zero, style: .plain)
+        tableView.showsVerticalScrollIndicator = false
+        tableView.showsHorizontalScrollIndicator = false
+        tableView.separatorStyle = .none
+        tableView.dataSource = self
+        tableView.delegate = self
+        setupHeaderView(tableView)
+        tableView.estimatedRowHeight = UIScreen.main.bounds.height
+        tableView.rowHeight = UITableView.automaticDimension
+        tableView.register(UITableViewCell.classForCoder(), forCellReuseIdentifier: "OctopusViewCell")
+        return tableView
+    }()
 
     public func reloadData() {
         listContainerView.reloadData()
@@ -103,20 +98,6 @@ public class OctopusView: UIView {
 
     private lazy var realHeaderView = UIView()
     private var segmentViewHeightConstraint: NSLayoutConstraint?
-
-    private lazy var tableView: OctopusMainTableView = {
-        let tableView = OctopusMainTableView(frame: CGRect.zero, style: .plain)
-        tableView.showsVerticalScrollIndicator = false
-        tableView.showsHorizontalScrollIndicator = false
-        tableView.separatorStyle = .none
-        tableView.dataSource = self
-        tableView.delegate = self
-        setupHeaderView(tableView)
-        tableView.estimatedRowHeight = UIScreen.main.bounds.height
-        tableView.rowHeight = UITableView.automaticDimension
-        tableView.register(UITableViewCell.classForCoder(), forCellReuseIdentifier: "OctopusViewCell")
-        return tableView
-    }()
 
     private var listContainerView = OctopusListContainerView()
 
@@ -289,7 +270,7 @@ extension OctopusView: UITableViewDelegate {
     }
 }
 
-class OctopusMainTableView: UITableView, UIGestureRecognizerDelegate {
+public class OctopusMainTableView: UITableView, UIGestureRecognizerDelegate {
 
     public func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldRecognizeSimultaneouslyWith otherGestureRecognizer: UIGestureRecognizer) -> Bool {
 
