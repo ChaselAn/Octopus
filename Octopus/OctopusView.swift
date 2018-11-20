@@ -44,6 +44,7 @@ public extension OctopusViewDataSource {
 public class OctopusView: UIView {
 
     public weak var dataSource: OctopusViewDataSource?
+    public var handOnOffsetY: CGFloat = 0
 
     public lazy var tableView: OctopusMainTableView = {
         let tableView = OctopusMainTableView(frame: CGRect.zero, style: .plain)
@@ -178,19 +179,12 @@ public class OctopusView: UIView {
     }
 
     private func preferredProcessListViewDidScroll(scrollView: UIScrollView) {
-        let contentInsetTop: CGFloat
-        if #available(iOS 11.0, *) {
-            contentInsetTop = tableView.adjustedContentInset.top
-        } else {
-            contentInsetTop = tableView.contentInset.top
-        }
-
-        if tableView.contentOffset.y < headerViewHeight - contentInsetTop {
+        if tableView.contentOffset.y < headerViewHeight - handOnOffsetY {
             guard let currentScrollingListView = currentScrollingListView else { return }
             currentScrollingListView.contentOffset = CGPoint.zero
             currentScrollingListView.showsVerticalScrollIndicator = false
         } else {
-            tableView.contentOffset = CGPoint(x: 0, y: headerViewHeight - contentInsetTop)
+            tableView.contentOffset = CGPoint(x: 0, y: headerViewHeight - handOnOffsetY)
             currentScrollingListView!.showsVerticalScrollIndicator = true
         }
     }
@@ -236,25 +230,17 @@ extension OctopusView: UITableViewDelegate {
 
     private func preferredProcessMainTableViewDidScroll(_ scrollView: UIScrollView) {
 
-        let contentInsetTop: CGFloat
-        if #available(iOS 11.0, *) {
-            contentInsetTop = tableView.adjustedContentInset.top
-        } else {
-            contentInsetTop = tableView.contentInset.top
-        }
-
         if let currentScrollingListView = currentScrollingListView, currentScrollingListView.contentOffset.y > 0 {
-            tableView.contentOffset = CGPoint(x: 0, y: headerViewHeight - contentInsetTop)
+            tableView.contentOffset = CGPoint(x: 0, y: headerViewHeight - handOnOffsetY)
         }
-
-        if tableView.contentOffset.y < headerViewHeight - contentInsetTop {
+        if tableView.contentOffset.y < headerViewHeight - handOnOffsetY {
             listContainerView.observations.keys.forEach({
                 $0.contentOffset = CGPoint.zero
             })
         }
 
-        if scrollView.contentOffset.y > headerViewHeight - contentInsetTop && (currentScrollingListView?.contentOffset.y ?? 0) == 0 {
-            tableView.contentOffset = CGPoint(x: 0, y: headerViewHeight - contentInsetTop)
+        if scrollView.contentOffset.y > headerViewHeight - handOnOffsetY && (currentScrollingListView?.contentOffset.y ?? 0) == 0 {
+            tableView.contentOffset = CGPoint(x: 0, y: headerViewHeight - handOnOffsetY)
         }
     }
 

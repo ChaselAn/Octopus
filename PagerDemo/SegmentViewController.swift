@@ -27,6 +27,8 @@ class SegmentViewController: UIViewController {
         octopusView.leadingAnchor.constraint(equalTo: view.leadingAnchor).isActive = true
         octopusView.trailingAnchor.constraint(equalTo: view.trailingAnchor).isActive = true
         octopusView.bottomAnchor.constraint(equalTo: view.bottomAnchor).isActive = true
+
+        octopusView.handOnOffsetY = (navigationController?.navigationBar.bounds.height ?? 0) + UIApplication.shared.statusBarFrame.height
     }
 
     @objc private func segmentViewClicked() {

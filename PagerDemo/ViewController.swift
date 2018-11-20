@@ -15,5 +15,11 @@ class ViewController: UIViewController {
         navigationController?.pushViewController(SegmentViewController(), animated: true)
     }
 
+//    override func viewWillAppear(_ animated: Bool) {
+//        super.viewWillAppear(animated)
+//
+//        navigationController?.setNavigationBarHidden(true, animated: false)
+//    }
+
 }
 

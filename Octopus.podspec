@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
     s.name         = 'Octopus'
-    s.version      = '0.0.3'
+    s.version      = '0.0.5'
     s.summary      = 'Octopus demo'
     s.homepage     = 'https://github.com/ChaselAn/Octopus'
     s.license      = 'MIT'
