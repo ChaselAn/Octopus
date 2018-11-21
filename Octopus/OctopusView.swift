@@ -30,7 +30,6 @@ public protocol OctopusViewDataSource: class {
 
     func segmentView(in octopusView: OctopusView) -> UIView?
     func segmentViewHeight(in octopusView: OctopusView) -> CGFloat
-
 }
 
 public extension OctopusViewDataSource {
@@ -41,9 +40,36 @@ public extension OctopusViewDataSource {
     func segmentViewHeight(in octopusView: OctopusView) -> CGFloat { return 0 }
 }
 
+public protocol OctopusViewDelegate: NSObjectProtocol {
+
+    func octopusViewDidScroll(_ octopusView: OctopusView)
+    func octopusViewDidZoom(_ octopusView: OctopusView)
+    func octopusViewWillBeginDragging(_ octopusView: OctopusView)
+    func octopusViewWillEndDragging(_ octopusView: OctopusView, withVelocity velocity: CGPoint, targetContentOffset: UnsafeMutablePointer<CGPoint>)
+    func octopusViewDidEndDragging(_ octopusView: OctopusView, willDecelerate decelerate: Bool)
+    func octopusViewWillBeginDecelerating(_ octopusView: OctopusView)
+    func octopusViewDidEndDecelerating(_ octopusView: OctopusView)
+    func octopusViewDidEndScrollingAnimation(_ octopusView: OctopusView)
+
+}
+
+public extension OctopusViewDelegate {
+
+    func octopusViewDidScroll(_ octopusView: OctopusView) {}
+    func octopusViewDidZoom(_ octopusView: OctopusView) {}
+    func octopusViewWillBeginDragging(_ octopusView: OctopusView) {}
+    func octopusViewWillEndDragging(_ octopusView: OctopusView, withVelocity velocity: CGPoint, targetContentOffset: UnsafeMutablePointer<CGPoint>) {}
+    func octopusViewDidEndDragging(_ octopusView: OctopusView, willDecelerate decelerate: Bool) {}
+    func octopusViewWillBeginDecelerating(_ octopusView: OctopusView) {}
+    func octopusViewDidEndDecelerating(_ octopusView: OctopusView) {}
+    func octopusViewDidEndScrollingAnimation(_ octopusView: OctopusView) {}
+
+}
+
 public class OctopusView: UIView {
 
     public weak var dataSource: OctopusViewDataSource?
+    public weak var delegate: OctopusViewDelegate?
     public var handOnOffsetY: CGFloat = 0
 
     public lazy var tableView: OctopusMainTableView = {
@@ -226,10 +252,12 @@ extension OctopusView: UITableViewDelegate {
         }
 
         preferredProcessMainTableViewDidScroll(scrollView)
+        delegate?.octopusViewDidScroll(self)
     }
 
     private func preferredProcessMainTableViewDidScroll(_ scrollView: UIScrollView) {
 
+        print("--------", scrollView.contentOffset)
         if let currentScrollingListView = currentScrollingListView, currentScrollingListView.contentOffset.y > 0 {
             tableView.contentOffset = CGPoint(x: 0, y: headerViewHeight - handOnOffsetY)
         }
@@ -244,17 +272,38 @@ extension OctopusView: UITableViewDelegate {
         }
     }
 
+    public func scrollViewDidZoom(_ scrollView: UIScrollView) {
+        delegate?.octopusViewDidZoom(self)
+    }
+
+    public func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
+        delegate?.octopusViewWillBeginDragging(self)
+    }
+
     public func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
         listContainerView.collectionView.isScrollEnabled = true
+        delegate?.octopusViewDidEndDecelerating(self)
+    }
+
+    public func scrollViewWillEndDragging(_ scrollView: UIScrollView, withVelocity velocity: CGPoint, targetContentOffset: UnsafeMutablePointer<CGPoint>) {
+        delegate?.octopusViewWillEndDragging(self, withVelocity: velocity, targetContentOffset: targetContentOffset)
     }
 
     public func scrollViewDidEndDragging(_ scrollView: UIScrollView, willDecelerate decelerate: Bool) {
         listContainerView.collectionView.isScrollEnabled = true
+        delegate?.octopusViewDidEndDragging(self, willDecelerate: decelerate)
     }
+
+    public func scrollViewWillBeginDecelerating(_ scrollView: UIScrollView) {
+        delegate?.octopusViewWillBeginDecelerating(self)
+    }
+
 
     public func scrollViewDidEndScrollingAnimation(_ scrollView: UIScrollView) {
         listContainerView.collectionView.isScrollEnabled = true
+        delegate?.octopusViewDidEndScrollingAnimation(self)
     }
+
 }
 
 public class OctopusMainTableView: UITableView, UIGestureRecognizerDelegate {
