@@ -51,6 +51,15 @@ public protocol OctopusViewDelegate: NSObjectProtocol {
     func octopusViewDidEndDecelerating(_ octopusView: OctopusView)
     func octopusViewDidEndScrollingAnimation(_ octopusView: OctopusView)
 
+    func octopusPageViewDidScroll(_ octopusPageView: UICollectionView)
+    func octopusPageViewDidZoom(_ octopusPageView: UICollectionView)
+    func octopusPageViewWillBeginDragging(_ octopusPageView: UICollectionView)
+    func octopusPageViewWillEndDragging(_ octopusPageView: UICollectionView, withVelocity velocity: CGPoint, targetContentOffset: UnsafeMutablePointer<CGPoint>)
+    func octopusPageViewDidEndDragging(_ octopusPageView: UICollectionView, willDecelerate decelerate: Bool)
+    func octopusPageViewWillBeginDecelerating(_ octopusPageView: UICollectionView)
+    func octopusPageViewDidEndDecelerating(_ octopusPageView: UICollectionView)
+    func octopusPageViewDidEndScrollingAnimation(_ octopusPageView: UICollectionView)
+
 }
 
 public extension OctopusViewDelegate {
@@ -63,6 +72,15 @@ public extension OctopusViewDelegate {
     func octopusViewWillBeginDecelerating(_ octopusView: OctopusView) {}
     func octopusViewDidEndDecelerating(_ octopusView: OctopusView) {}
     func octopusViewDidEndScrollingAnimation(_ octopusView: OctopusView) {}
+
+    func octopusPageViewDidScroll(_ octopusPageView: UICollectionView) {}
+    func octopusPageViewDidZoom(_ octopusPageView: UICollectionView) {}
+    func octopusPageViewWillBeginDragging(_ octopusPageView: UICollectionView) {}
+    func octopusPageViewWillEndDragging(_ octopusPageView: UICollectionView, withVelocity velocity: CGPoint, targetContentOffset: UnsafeMutablePointer<CGPoint>) {}
+    func octopusPageViewDidEndDragging(_ octopusPageView: UICollectionView, willDecelerate decelerate: Bool) {}
+    func octopusPageViewWillBeginDecelerating(_ octopusPageView: UICollectionView) {}
+    func octopusPageViewDidEndDecelerating(_ octopusPageView: UICollectionView) {}
+    func octopusPageViewDidEndScrollingAnimation(_ octopusPageView: UICollectionView) {}
 
 }
 
@@ -147,7 +165,7 @@ public class OctopusView: UIView {
         tableView.constraintEqualToSuperView()
 
         listContainerView.mainTableView = tableView
-
+        listContainerView.delegate = self
 
         if let dataSource = dataSource {
             listContainerView.dataViewsCount = { [weak self] in
@@ -302,6 +320,42 @@ extension OctopusView: UITableViewDelegate {
     public func scrollViewDidEndScrollingAnimation(_ scrollView: UIScrollView) {
         listContainerView.collectionView.isScrollEnabled = true
         delegate?.octopusViewDidEndScrollingAnimation(self)
+    }
+
+}
+
+extension OctopusView: OctopusListContainerViewDelegate {
+
+    func collectionViewDidScroll(_ collectionView: UICollectionView) {
+        delegate?.octopusPageViewDidScroll(collectionView)
+    }
+
+    func collectionViewDidZoom(_ collectionView: UICollectionView) {
+        delegate?.octopusPageViewDidZoom(collectionView)
+    }
+
+    func collectionViewWillBeginDragging(_ collectionView: UICollectionView) {
+        delegate?.octopusPageViewWillBeginDragging(collectionView)
+    }
+
+    func collectionViewWillEndDragging(_ collectionView: UICollectionView, withVelocity velocity: CGPoint, targetContentOffset: UnsafeMutablePointer<CGPoint>) {
+        delegate?.octopusPageViewWillEndDragging(collectionView, withVelocity: velocity, targetContentOffset: targetContentOffset)
+    }
+
+    func collectionViewDidEndDragging(_ collectionView: UICollectionView, willDecelerate decelerate: Bool) {
+        delegate?.octopusPageViewDidEndDragging(collectionView, willDecelerate: decelerate)
+    }
+
+    func collectionViewWillBeginDecelerating(_ collectionView: UICollectionView) {
+        delegate?.octopusPageViewWillBeginDecelerating(collectionView)
+    }
+
+    func collectionViewDidEndDecelerating(_ collectionView: UICollectionView) {
+        delegate?.octopusPageViewDidEndDecelerating(collectionView)
+    }
+
+    func collectionViewDidEndScrollingAnimation(_ collectionView: UICollectionView) {
+        delegate?.octopusPageViewDidEndScrollingAnimation(collectionView)
     }
 
 }

@@ -8,8 +8,21 @@
 
 import UIKit
 
+protocol OctopusListContainerViewDelegate: NSObjectProtocol {
+
+    func collectionViewDidScroll(_ collectionView: UICollectionView)
+    func collectionViewDidZoom(_ collectionView: UICollectionView)
+    func collectionViewWillBeginDragging(_ collectionView: UICollectionView)
+    func collectionViewWillEndDragging(_ collectionView: UICollectionView, withVelocity velocity: CGPoint, targetContentOffset: UnsafeMutablePointer<CGPoint>)
+    func collectionViewDidEndDragging(_ collectionView: UICollectionView, willDecelerate decelerate: Bool)
+    func collectionViewWillBeginDecelerating(_ collectionView: UICollectionView)
+    func collectionViewDidEndDecelerating(_ collectionView: UICollectionView)
+    func collectionViewDidEndScrollingAnimation(_ collectionView: UICollectionView)
+
+}
 class OctopusListContainerView: UIView {
 
+    weak var delegate: OctopusListContainerViewDelegate?
     var collectionView: UICollectionView!
     weak var mainTableView: UITableView?
     var dataViewsCount: (() -> Int)?
@@ -87,23 +100,45 @@ extension OctopusListContainerView: UICollectionViewDataSource {
 
 extension OctopusListContainerView: UICollectionViewDelegate {
 
-    func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
-        self.mainTableView?.isScrollEnabled = true
-    }
-
-    func scrollViewDidEndDragging(_ scrollView: UIScrollView, willDecelerate decelerate: Bool) {
-        self.mainTableView?.isScrollEnabled = true
-    }
-
-    func scrollViewDidEndScrollingAnimation(_ scrollView: UIScrollView) {
-        self.mainTableView?.isScrollEnabled = true
-    }
-
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
         if scrollView.isTracking || scrollView.isDecelerating {
             self.mainTableView?.isScrollEnabled = false
         }
+        delegate?.collectionViewDidScroll(collectionView)
     }
+
+    func scrollViewDidZoom(_ scrollView: UIScrollView) {
+        delegate?.collectionViewDidZoom(collectionView)
+    }
+
+    func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
+        delegate?.collectionViewWillBeginDragging(collectionView)
+    }
+
+    func scrollViewWillEndDragging(_ scrollView: UIScrollView, withVelocity velocity: CGPoint, targetContentOffset: UnsafeMutablePointer<CGPoint>) {
+        delegate?.collectionViewWillEndDragging(collectionView, withVelocity: velocity, targetContentOffset: targetContentOffset)
+    }
+
+    func scrollViewDidEndDragging(_ scrollView: UIScrollView, willDecelerate decelerate: Bool) {
+        self.mainTableView?.isScrollEnabled = true
+        delegate?.collectionViewDidEndDragging(collectionView, willDecelerate: decelerate)
+    }
+
+    func scrollViewWillBeginDecelerating(_ scrollView: UIScrollView) {
+        delegate?.collectionViewWillBeginDecelerating(collectionView)
+    }
+
+    func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
+        self.mainTableView?.isScrollEnabled = true
+        delegate?.collectionViewDidEndDecelerating(collectionView)
+    }
+
+
+    func scrollViewDidEndScrollingAnimation(_ scrollView: UIScrollView) {
+        self.mainTableView?.isScrollEnabled = true
+        delegate?.collectionViewDidEndScrollingAnimation(collectionView)
+    }
+
 }
 
 extension OctopusListContainerView: UICollectionViewDelegateFlowLayout {
