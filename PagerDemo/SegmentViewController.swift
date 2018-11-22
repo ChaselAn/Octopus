@@ -21,6 +21,7 @@ class SegmentViewController: UIViewController {
 //            octopusView.contentInsetAdjustmentBehavior = .never
 //        }
         octopusView.dataSource = self
+        octopusView.delegate = self
         automaticallyAdjustsScrollViewInsets = false
         view.addSubview(octopusView)
         octopusView.translatesAutoresizingMaskIntoConstraints = false
@@ -29,7 +30,7 @@ class SegmentViewController: UIViewController {
         octopusView.trailingAnchor.constraint(equalTo: view.trailingAnchor).isActive = true
         octopusView.bottomAnchor.constraint(equalTo: view.bottomAnchor).isActive = true
 
-        octopusView.handOnOffsetY = (navigationController?.navigationBar.bounds.height ?? 0) + UIApplication.shared.statusBarFrame.height
+        octopusView.handUpOffsetY = (navigationController?.navigationBar.bounds.height ?? 0) + UIApplication.shared.statusBarFrame.height
 //        octopusView.tableView.contentInset = UIEdgeInsets(top: 200, left: 0, bottom: 0, right: 0)
 
     }
@@ -87,5 +88,12 @@ extension SegmentViewController: OctopusViewDataSource {
 
     func segmentViewHeight(in octopusView: OctopusView) -> CGFloat {
         return isShowAll ? 100 : 50
+    }
+}
+
+extension SegmentViewController: OctopusViewDelegate {
+
+    func octopusViewDidScroll(_ octopusView: OctopusView) {
+//        print("------------", octopusView.isHandUp)
     }
 }
