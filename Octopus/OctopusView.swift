@@ -275,7 +275,6 @@ extension OctopusView: UITableViewDelegate {
 
     private func preferredProcessMainTableViewDidScroll(_ scrollView: UIScrollView) {
 
-        print("--------", scrollView.contentOffset)
         if let currentScrollingListView = currentScrollingListView, currentScrollingListView.contentOffset.y > 0 {
             tableView.contentOffset = CGPoint(x: 0, y: headerViewHeight - handOnOffsetY)
         }
