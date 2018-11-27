@@ -172,23 +172,21 @@ public class OctopusView: UIView {
         listContainerView.mainTableView = tableView
         listContainerView.delegate = self
 
-        if let dataSource = dataSource {
-            listContainerView.dataViewsCount = { [weak self] in
-                guard let strongSelf = self else { return 0 }
-                return dataSource.numberOfPages(in: strongSelf)
-            }
+        listContainerView.dataViewsCount = { [weak self] in
+            guard let strongSelf = self, let dataSource = strongSelf.dataSource else { return 0 }
+            return dataSource.numberOfPages(in: strongSelf)
+        }
 
-            listContainerView.dataContainerView = { [weak self] index in
-                guard let strongSelf = self else { return OctopusExceptionView() }
-                let page = dataSource.octopusView(strongSelf, pageViewControllerAt: index)
-                return page.containerView()
-            }
+        listContainerView.dataContainerView = { [weak self] index in
+            guard let strongSelf = self, let dataSource = strongSelf.dataSource else { return OctopusExceptionView() }
+            let page = dataSource.octopusView(strongSelf, pageViewControllerAt: index)
+            return page.containerView()
+        }
 
-            listContainerView.dataScrollView = { [weak self] index in
-                guard let strongSelf = self else { return OctopusExceptionView() }
-                let page = dataSource.octopusView(strongSelf, pageViewControllerAt: index)
-                return page.scrollViewInContainerView()
-            }
+        listContainerView.dataScrollView = { [weak self] index in
+            guard let strongSelf = self, let dataSource = strongSelf.dataSource else { return OctopusExceptionView() }
+            let page = dataSource.octopusView(strongSelf, pageViewControllerAt: index)
+            return page.scrollViewInContainerView()
         }
 
         listContainerView.dataViewDidScroll = { [weak self] scrollView in
