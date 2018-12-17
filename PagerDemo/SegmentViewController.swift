@@ -17,12 +17,11 @@ class SegmentViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
+        octopusView.dataSource = self
+        octopusView.delegate = self
 //        if #available(iOS 11.0, *) {
 //            octopusView.tableView.contentInsetAdjustmentBehavior = .never
 //        }
-        octopusView.dataSource = self
-        octopusView.delegate = self
-        automaticallyAdjustsScrollViewInsets = false
         view.addSubview(octopusView)
         octopusView.translatesAutoresizingMaskIntoConstraints = false
         octopusView.topAnchor.constraint(equalTo: view.topAnchor).isActive = true
@@ -31,8 +30,8 @@ class SegmentViewController: UIViewController {
         octopusView.bottomAnchor.constraint(equalTo: view.bottomAnchor).isActive = true
 
         octopusView.hangUpOffsetY = Int((navigationController?.navigationBar.bounds.height ?? 0) + UIApplication.shared.statusBarFrame.height)
-//        octopusView.tableView.contentInset = UIEdgeInsets(top: 200, left: 0, bottom: 0, right: 0)
-
+//        octopusView.tableView.contentInset = UIEdgeInsets(top: 88, left: 0, bottom: 0, right: 0)
+        view.layoutIfNeeded()
     }
     
     @objc private func segmentViewClicked() {
@@ -41,16 +40,6 @@ class SegmentViewController: UIViewController {
     }
 
     private var vcs: [Int: OctopusDataViewController] = [:]
-
-//    override func viewWillAppear(_ animated: Bool) {
-//        super.viewWillAppear(animated)
-//
-//        if #available(iOS 11.0, *) {
-//            octopusView.layoutIfNeeded()
-//        } else {
-//            octopusView.tableView.setContentOffset(CGPoint(x: 0, y: -200), animated: false)
-//        }
-//    }
 
 }
 
