@@ -152,9 +152,15 @@ public class OctopusView: UIView {
         }
         if animated {
             tableView.beginUpdates()
-            headerViewHeightConstraint?.constant = headerViewHeightFloat
-            tableView.tableHeaderView?.frame.size.height = CGFloat(headerViewTotalHeight)
-            realHeaderView.layoutIfNeeded()
+            UIView.animate(withDuration: 0.3, animations: { [weak self] in
+                guard let strongSelf = self else { return }
+                strongSelf.headerViewHeightConstraint?.constant = headerViewHeightFloat
+                strongSelf.realHeaderView.frame.size.height = CGFloat(strongSelf.headerViewTotalHeight)
+                strongSelf.realHeaderView.layoutIfNeeded()
+                }, completion: { [weak self] _ in
+                    guard let strongSelf = self else { return }
+                    strongSelf.tableView.tableHeaderView = strongSelf.realHeaderView
+            })
             tableView.endUpdates()
         } else {
             headerViewHeightConstraint?.constant = headerViewHeightFloat
@@ -172,10 +178,16 @@ public class OctopusView: UIView {
         }
         if animated {
             tableView.beginUpdates()
-            segmentViewHeightConstraint?.constant = CGFloat(segmentViewHeight)
-            tableView.tableHeaderView?.frame.size.height = CGFloat(headerViewTotalHeight)
-            realHeaderView.layoutIfNeeded()
-            tableView.endUpdates()
+            UIView.animate(withDuration: 0.3, animations: { [weak self] in
+                guard let strongSelf = self else { return }
+                strongSelf.segmentViewHeightConstraint?.constant = CGFloat(strongSelf.segmentViewHeight)
+                strongSelf.realHeaderView.frame.size.height = CGFloat(strongSelf.headerViewTotalHeight)
+                strongSelf.realHeaderView.layoutIfNeeded()
+                }, completion: { [weak self] _ in
+                    guard let strongSelf = self else { return }
+                    strongSelf.tableView.tableHeaderView = strongSelf.realHeaderView
+            })
+            tableView.endUpdates() 
         } else {
             segmentViewHeightConstraint?.constant = CGFloat(segmentViewHeight)
             realHeaderView.frame.size.height = CGFloat(headerViewTotalHeight)
