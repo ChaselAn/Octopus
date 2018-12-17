@@ -18,7 +18,7 @@ class SegmentViewController: UIViewController {
         super.viewDidLoad()
 
 //        if #available(iOS 11.0, *) {
-//            octopusView.contentInsetAdjustmentBehavior = .never
+//            octopusView.tableView.contentInsetAdjustmentBehavior = .never
 //        }
         octopusView.dataSource = self
         octopusView.delegate = self
@@ -30,7 +30,7 @@ class SegmentViewController: UIViewController {
         octopusView.trailingAnchor.constraint(equalTo: view.trailingAnchor).isActive = true
         octopusView.bottomAnchor.constraint(equalTo: view.bottomAnchor).isActive = true
 
-        octopusView.handUpOffsetY = (navigationController?.navigationBar.bounds.height ?? 0) + UIApplication.shared.statusBarFrame.height
+        octopusView.hangUpOffsetY = Int((navigationController?.navigationBar.bounds.height ?? 0) + UIApplication.shared.statusBarFrame.height)
 //        octopusView.tableView.contentInset = UIEdgeInsets(top: 200, left: 0, bottom: 0, right: 0)
 
     }
@@ -75,7 +75,7 @@ extension SegmentViewController: OctopusViewDataSource {
         return view
     }
 
-    func headerViewHeight(in octopusView: OctopusView) -> CGFloat {
+    func headerViewHeight(in octopusView: OctopusView) -> Int {
         return 150
     }
 
@@ -86,7 +86,7 @@ extension SegmentViewController: OctopusViewDataSource {
         return view
     }
 
-    func segmentViewHeight(in octopusView: OctopusView) -> CGFloat {
+    func segmentViewHeight(in octopusView: OctopusView) -> Int {
         return isShowAll ? 100 : 50
     }
 }

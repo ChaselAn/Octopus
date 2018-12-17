@@ -26,11 +26,22 @@ class OctopusListContainerView: UIView {
     var collectionView: UICollectionView!
     weak var mainTableView: UITableView?
     var dataViewsCount: (() -> Int)?
-    var dataContainerView: ((Int) -> UIView)?
-    var dataScrollView: ((Int) -> UIScrollView)?
+    var dataOctopusPage: ((Int) -> OctopusPage?)?
+    var cellHeight: (() -> CGFloat?)?
+
     var dataViewDidScroll: ((UIScrollView) -> Void)?
 
+    var visibleOctopusPages: [OctopusPage] {
+        return collectionView.visibleCells.compactMap({ ($0 as? OctopusPageCell)?.octopusPage })
+    }
+
+    var visibleIndexs: [Int] {
+        return collectionView.indexPathsForVisibleItems.map({ $0.item })
+    }
+
     var observations: [UIScrollView: NSKeyValueObservation] = [:]
+
+    private var containerViews: [Int: UIView] = [:]
 
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -55,7 +66,13 @@ class OctopusListContainerView: UIView {
     override func layoutSubviews() {
         super.layoutSubviews()
 
-        observations.keys.forEach({ $0.frame = self.bounds })
+        containerViews.values.forEach({ [weak self] in
+            guard let strongSelf = self else { return }
+            $0.translatesAutoresizingMaskIntoConstraints = true
+            $0.frame = CGRect(origin: strongSelf.bounds.origin, size: CGSize(width: strongSelf.bounds.width, height: strongSelf.cellHeight?() ?? strongSelf.bounds.height))
+            $0.layoutIfNeeded()
+        })
+
     }
 
     required init?(coder aDecoder: NSCoder) {
@@ -64,6 +81,16 @@ class OctopusListContainerView: UIView {
 
     func reloadData() {
         collectionView.reloadData()
+    }
+
+    func updateMainTableCellHeight() {
+        layoutSubviews()
+    }
+
+    func scrollToPage(index: Int) {
+        layoutIfNeeded()
+        collectionView.setContentOffset(CGPoint(x: bounds.size.width * CGFloat(index), y: 0), animated: true)
+        layoutSubviews()
     }
 
 }
@@ -77,22 +104,27 @@ extension OctopusListContainerView: UICollectionViewDataSource {
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "OctopusPageCell", for: indexPath) as! OctopusPageCell
         for view in cell.contentView.subviews {
-            if let scrollView = cell.octopusPageScrollView {
+            if let scrollView = cell.octopusPage?.scrollViewInContainerView() {
                 observations[scrollView] = nil
             }
             view.removeFromSuperview()
         }
-        guard let containerView = dataContainerView?(indexPath.row) else { return cell }
+        guard let octopusPage = dataOctopusPage?(indexPath.row) else { return cell }
+        cell.octopusPage = octopusPage
+        let containerView = octopusPage.containerView()
         cell.contentView.addSubview(containerView)
-        if let scrollView = dataScrollView?(indexPath.row) {
-            cell.octopusPageScrollView = scrollView
-            let observation = scrollView.observe(\.contentOffset, options: [.old, .new], changeHandler: { [weak self] (scrollView, change) in
-                guard let strongSelf = self else { return }
-                guard change.oldValue != change.newValue else { return }
-                strongSelf.dataViewDidScroll?(scrollView)
-            })
-            observations[scrollView] = observation
-        }
+        let scrollView = octopusPage.scrollViewInContainerView()
+        let observation = scrollView.observe(\.contentOffset, options: [.old, .new], changeHandler: { [weak self] (scrollView, change) in
+            guard let strongSelf = self else { return }
+            guard change.oldValue != change.newValue else { return }
+            strongSelf.dataViewDidScroll?(scrollView)
+        })
+        containerView.translatesAutoresizingMaskIntoConstraints = true
+        layoutIfNeeded()
+        containerView.frame = CGRect(origin: bounds.origin, size: CGSize(width: bounds.width, height: cellHeight?() ?? bounds.height))
+        containerView.layoutIfNeeded()
+        observations[scrollView] = observation
+        containerViews[indexPath.item] = containerView
 
         return cell
     }
@@ -133,7 +165,6 @@ extension OctopusListContainerView: UICollectionViewDelegate {
         delegate?.collectionViewDidEndDecelerating(collectionView)
     }
 
-
     func scrollViewDidEndScrollingAnimation(_ scrollView: UIScrollView) {
         self.mainTableView?.isScrollEnabled = true
         delegate?.collectionViewDidEndScrollingAnimation(collectionView)
@@ -148,23 +179,6 @@ extension OctopusListContainerView: UICollectionViewDelegateFlowLayout {
     }
 }
 
-extension OctopusListContainerView: UITableViewDataSource {
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return 100
-    }
-
-    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-
-        let cell = UITableViewCell()
-        cell.contentView.subviews.forEach({
-            $0.removeFromSuperview()
-        })
-        cell.textLabel?.text = "\(indexPath.row)"
-        return cell
-    }
-}
-
 class OctopusPageCell: UICollectionViewCell {
-    var octopusPageScrollView: UIScrollView?
-
+    var octopusPage: OctopusPage?
 }

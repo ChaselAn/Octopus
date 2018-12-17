@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		F15F067F21C3B9B300EBF83D /* OctopusView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F15F067D21C3B9B300EBF83D /* OctopusView.swift */; };
+		F15F068021C3B9B300EBF83D /* OctopusListContainerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F15F067E21C3B9B300EBF83D /* OctopusListContainerView.swift */; };
 		F16F8556219C20E3009BC990 /* SegmentViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F16F8555219C20E3009BC990 /* SegmentViewController.swift */; };
 		F177D454219D5646007E664C /* OctopusDataViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F17A8A26218C3ECE00031C79 /* OctopusDataViewController.swift */; };
 		F17A89FD218AE64B00031C79 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F17A89FC218AE64B00031C79 /* AppDelegate.swift */; };
@@ -17,8 +19,6 @@
 		F17A8A17218AE88A00031C79 /* Octopus.h in Headers */ = {isa = PBXBuildFile; fileRef = F17A8A15218AE88A00031C79 /* Octopus.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		F17A8A1A218AE88B00031C79 /* Octopus.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F17A8A13218AE88A00031C79 /* Octopus.framework */; };
 		F17A8A1B218AE88B00031C79 /* Octopus.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = F17A8A13218AE88A00031C79 /* Octopus.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		F17A8A21218AFDFD00031C79 /* OctopusView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F17A8A20218AFDFD00031C79 /* OctopusView.swift */; };
-		F17A8A23218B057A00031C79 /* OctopusListContainerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F17A8A22218B057A00031C79 /* OctopusListContainerView.swift */; };
 		F17A8A25218C3CC900031C79 /* OctopusUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = F17A8A24218C3CC900031C79 /* OctopusUtils.swift */; };
 /* End PBXBuildFile section */
 
@@ -47,6 +47,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		F15F067D21C3B9B300EBF83D /* OctopusView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OctopusView.swift; sourceTree = "<group>"; };
+		F15F067E21C3B9B300EBF83D /* OctopusListContainerView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OctopusListContainerView.swift; sourceTree = "<group>"; };
 		F16F8555219C20E3009BC990 /* SegmentViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SegmentViewController.swift; sourceTree = "<group>"; };
 		F17A89F9218AE64B00031C79 /* PagerDemo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PagerDemo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		F17A89FC218AE64B00031C79 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -58,8 +60,6 @@
 		F17A8A13218AE88A00031C79 /* Octopus.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Octopus.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		F17A8A15218AE88A00031C79 /* Octopus.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Octopus.h; sourceTree = "<group>"; };
 		F17A8A16218AE88A00031C79 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		F17A8A20218AFDFD00031C79 /* OctopusView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OctopusView.swift; sourceTree = "<group>"; };
-		F17A8A22218B057A00031C79 /* OctopusListContainerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OctopusListContainerView.swift; sourceTree = "<group>"; };
 		F17A8A24218C3CC900031C79 /* OctopusUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OctopusUtils.swift; sourceTree = "<group>"; };
 		F17A8A26218C3ECE00031C79 /* OctopusDataViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OctopusDataViewController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -120,8 +120,8 @@
 			isa = PBXGroup;
 			children = (
 				F17A8A15218AE88A00031C79 /* Octopus.h */,
-				F17A8A20218AFDFD00031C79 /* OctopusView.swift */,
-				F17A8A22218B057A00031C79 /* OctopusListContainerView.swift */,
+				F15F067E21C3B9B300EBF83D /* OctopusListContainerView.swift */,
+				F15F067D21C3B9B300EBF83D /* OctopusView.swift */,
 				F17A8A24218C3CC900031C79 /* OctopusUtils.swift */,
 				F17A8A16218AE88A00031C79 /* Info.plist */,
 			);
@@ -253,8 +253,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F17A8A21218AFDFD00031C79 /* OctopusView.swift in Sources */,
-				F17A8A23218B057A00031C79 /* OctopusListContainerView.swift in Sources */,
+				F15F068021C3B9B300EBF83D /* OctopusListContainerView.swift in Sources */,
+				F15F067F21C3B9B300EBF83D /* OctopusView.swift in Sources */,
 				F17A8A25218C3CC900031C79 /* OctopusUtils.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

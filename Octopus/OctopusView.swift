@@ -26,21 +26,24 @@ public protocol OctopusViewDataSource: class {
     func octopusView(_ octopusView: OctopusView, pageViewControllerAt index: Int) -> OctopusPage
 
     func headerView(in octopusView: OctopusView) -> UIView?
-    func headerViewHeight(in octopusView: OctopusView) -> CGFloat
+    func headerViewHeight(in octopusView: OctopusView) -> Int // 鉴于scrollView的滚动精度缺失问题，暂时使用整型
 
     func segmentView(in octopusView: OctopusView) -> UIView?
-    func segmentViewHeight(in octopusView: OctopusView) -> CGFloat
+    func segmentViewHeight(in octopusView: OctopusView) -> Int // 鉴于scrollView的滚动精度缺失问题，暂时使用整型
 }
 
 public extension OctopusViewDataSource {
     func headerView(in octopusView: OctopusView) -> UIView? { return nil }
-    func headerViewHeight(in octopusView: OctopusView) -> CGFloat { return 0 }
+    func headerViewHeight(in octopusView: OctopusView) -> Int { return 0 }
 
     func segmentView(in octopusView: OctopusView) -> UIView? { return nil }
-    func segmentViewHeight(in octopusView: OctopusView) -> CGFloat { return 0 }
+    func segmentViewHeight(in octopusView: OctopusView) -> Int { return 0 }
 }
 
 public protocol OctopusViewDelegate: NSObjectProtocol {
+
+    func octopusViewStatusChanged(_ octopusView: OctopusView, status: OctopusView.Status)
+    func octopusViewGestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldRecognizeSimultaneouslyWith otherGestureRecognizer: UIGestureRecognizer, in octopusView: OctopusView) -> Bool
 
     func octopusViewDidScroll(_ octopusView: OctopusView)
     func octopusViewDidZoom(_ octopusView: OctopusView)
@@ -64,6 +67,11 @@ public protocol OctopusViewDelegate: NSObjectProtocol {
 
 public extension OctopusViewDelegate {
 
+    func octopusViewStatusChanged(_ octopusView: OctopusView, status: OctopusView.Status) {}
+    func octopusViewGestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldRecognizeSimultaneouslyWith otherGestureRecognizer: UIGestureRecognizer, in octopusView: OctopusView) -> Bool {
+        return gestureRecognizer is UIPanGestureRecognizer && otherGestureRecognizer is UIPanGestureRecognizer
+    }
+
     func octopusViewDidScroll(_ octopusView: OctopusView) {}
     func octopusViewDidZoom(_ octopusView: OctopusView) {}
     func octopusViewWillBeginDragging(_ octopusView: OctopusView) {}
@@ -86,13 +94,31 @@ public extension OctopusViewDelegate {
 
 public class OctopusView: UIView {
 
+    public enum Status {
+        case normal
+        case hangUp
+    }
+
     public weak var dataSource: OctopusViewDataSource?
     public weak var delegate: OctopusViewDelegate?
-    
-    public var handUpOffsetY: CGFloat = 0 // 悬挂区域距离顶部的间距
-    public var isHandUp: Bool {
-        guard dataSource?.segmentView(in: self) != nil else { return false }
-        return tableView.contentOffset == CGPoint(x: 0, y: headerViewHeight - handUpOffsetY)
+
+    public var hangUpOffsetY: Int = 0 // 悬挂区域距离顶部的间距
+    public var isHangUp: Bool {
+        return status == .hangUp
+    }
+    public var status: Status = .normal
+
+    public var visibleOctopusPages: [OctopusPage] {
+        return listContainerView.visibleOctopusPages
+    }
+
+    public var visibleOctopusPageIndexs: [Int] {
+        return listContainerView.visibleIndexs
+    }
+
+    public var currentMainVisibleIndex: Int {
+        let x = listContainerView.collectionView.contentOffset.x + listContainerView.collectionView.bounds.width / 2
+        return lround(Double(x / listContainerView.collectionView.contentSize.width))
     }
 
     public lazy var tableView: OctopusMainTableView = {
@@ -106,6 +132,10 @@ public class OctopusView: UIView {
         tableView.estimatedRowHeight = UIScreen.main.bounds.height
         tableView.rowHeight = UITableView.automaticDimension
         tableView.register(UITableViewCell.classForCoder(), forCellReuseIdentifier: "OctopusViewCell")
+        tableView.octopusViewGestureRecognizer = { [weak self] gesture, otherGesture in
+            guard let strongSelf = self, let delegate = strongSelf.delegate else { return true }
+            return delegate.octopusViewGestureRecognizer(gesture, shouldRecognizeSimultaneouslyWith: otherGesture, in: strongSelf)
+        }
         return tableView
     }()
 
@@ -114,40 +144,76 @@ public class OctopusView: UIView {
         tableView.reloadData()
     }
 
+    public func updateHeaderViewHeight(animated: Bool) {
+        let headerViewHeightFloat = CGFloat(headerViewHeight)
+        guard headerViewHeightFloat != headerViewHeightConstraint?.constant else { return }
+        guard dataSource?.headerView(in: self) != nil else {
+            return
+        }
+        if animated {
+            tableView.beginUpdates()
+            headerViewHeightConstraint?.constant = headerViewHeightFloat
+            tableView.tableHeaderView?.frame.size.height = CGFloat(headerViewTotalHeight)
+            realHeaderView.layoutIfNeeded()
+            tableView.endUpdates()
+        } else {
+            headerViewHeightConstraint?.constant = headerViewHeightFloat
+            realHeaderView.frame.size.height = CGFloat(headerViewTotalHeight)
+            tableView.tableHeaderView = realHeaderView
+        }
+
+        preferredProcessMainTableViewDidScroll(tableView)
+
+    }
+
     public func updateSegmentViewHeight(animated: Bool) {
         guard dataSource?.segmentView(in: self) != nil else {
             return
         }
         if animated {
             tableView.beginUpdates()
-            UIView.animate(withDuration: 0.3) { [weak self] in
-                guard let strongSelf = self else { return }
-                strongSelf.segmentViewHeightConstraint?.constant = strongSelf.segmentViewHeight
-                strongSelf.tableView.tableHeaderView?.frame.size.height = strongSelf.headerViewTotalHeight
-                strongSelf.realHeaderView.layoutIfNeeded()
-            }
+            segmentViewHeightConstraint?.constant = CGFloat(segmentViewHeight)
+            tableView.tableHeaderView?.frame.size.height = CGFloat(headerViewTotalHeight)
+            realHeaderView.layoutIfNeeded()
             tableView.endUpdates()
         } else {
-            segmentViewHeightConstraint?.constant = segmentViewHeight
+            segmentViewHeightConstraint?.constant = CGFloat(segmentViewHeight)
+            realHeaderView.frame.size.height = CGFloat(headerViewTotalHeight)
+            tableView.tableHeaderView = realHeaderView
         }
+
+        listContainerView.updateMainTableCellHeight()
     }
 
-    private var headerViewTotalHeight: CGFloat {
+    public func scrollToPage(index: Int) {
+        listContainerView.scrollToPage(index: index)
+    }
+
+    private var headerViewTotalHeight: Int {
         return headerViewHeight + segmentViewHeight
     }
 
-    private var headerViewHeight: CGFloat {
-        guard dataSource?.headerView(in: self) != nil else { return 0 }
-        return dataSource?.headerViewHeight(in: self) ?? 0
+    private var headerViewHeight: Int {
+        guard dataSource?.headerView(in: self) != nil else {
+            return 0
+        }
+        let height = dataSource?.headerViewHeight(in: self) ?? 0
+        return height
     }
 
-    private var segmentViewHeight: CGFloat {
+    private var segmentViewHeight: Int {
         guard dataSource?.segmentView(in: self) != nil else { return 0 }
         return dataSource?.segmentViewHeight(in: self) ?? 0
     }
 
-    private lazy var realHeaderView = UIView()
+    private lazy var realHeaderView: UIView = {
+        let view = UIView()
+        view.backgroundColor = .clear
+        view.clipsToBounds = true
+        return view
+    }()
     private var segmentViewHeightConstraint: NSLayoutConstraint?
+    private var headerViewHeightConstraint: NSLayoutConstraint?
 
     private var listContainerView = OctopusListContainerView()
 
@@ -177,22 +243,21 @@ public class OctopusView: UIView {
             return dataSource.numberOfPages(in: strongSelf)
         }
 
-        listContainerView.dataContainerView = { [weak self] index in
-            guard let strongSelf = self, let dataSource = strongSelf.dataSource else { return OctopusExceptionView() }
+        listContainerView.dataOctopusPage = { [weak self] index in
+            guard let strongSelf = self, let dataSource = strongSelf.dataSource else { return nil }
             let page = dataSource.octopusView(strongSelf, pageViewControllerAt: index)
-            return page.containerView()
-        }
-
-        listContainerView.dataScrollView = { [weak self] index in
-            guard let strongSelf = self, let dataSource = strongSelf.dataSource else { return OctopusExceptionView() }
-            let page = dataSource.octopusView(strongSelf, pageViewControllerAt: index)
-            return page.scrollViewInContainerView()
+            return page
         }
 
         listContainerView.dataViewDidScroll = { [weak self] scrollView in
             guard let strongSelf = self else { return }
             strongSelf.currentScrollingListView = scrollView
             strongSelf.preferredProcessListViewDidScroll(scrollView: scrollView)
+        }
+
+        listContainerView.cellHeight = { [weak self] in
+            guard let strongSelf = self else { return nil }
+            return strongSelf.bounds.height - CGFloat(strongSelf.hangUpOffsetY) - CGFloat(strongSelf.segmentViewHeight)
         }
     }
 
@@ -209,7 +274,8 @@ public class OctopusView: UIView {
             headerView.topAnchor.constraint(equalTo: realHeaderView.topAnchor).isActive = true
             headerView.leadingAnchor.constraint(equalTo: realHeaderView.leadingAnchor).isActive = true
             headerView.trailingAnchor.constraint(equalTo: realHeaderView.trailingAnchor).isActive = true
-            headerView.heightAnchor.constraint(equalToConstant: headerViewHeight).isActive = true
+            headerViewHeightConstraint = headerView.heightAnchor.constraint(equalToConstant: CGFloat(headerViewHeight))
+            headerViewHeightConstraint?.isActive = true
         }
         if let segmentView = dataSource?.segmentView(in: self) {
             realHeaderView.addSubview(segmentView)
@@ -217,7 +283,7 @@ public class OctopusView: UIView {
             segmentView.bottomAnchor.constraint(equalTo: realHeaderView.bottomAnchor).isActive = true
             segmentView.leadingAnchor.constraint(equalTo: realHeaderView.leadingAnchor).isActive = true
             segmentView.trailingAnchor.constraint(equalTo: realHeaderView.trailingAnchor).isActive = true
-            segmentViewHeightConstraint = segmentView.heightAnchor.constraint(equalToConstant: segmentViewHeight)
+            segmentViewHeightConstraint = segmentView.heightAnchor.constraint(equalToConstant: CGFloat(segmentViewHeight))
             segmentViewHeightConstraint!.isActive = true
         }
 
@@ -226,12 +292,12 @@ public class OctopusView: UIView {
     }
 
     private func preferredProcessListViewDidScroll(scrollView: UIScrollView) {
-        if tableView.contentOffset.y < headerViewHeight - handUpOffsetY {
+        if tableView.contentOffset.y < CGFloat(headerViewHeight - hangUpOffsetY) {
             guard let currentScrollingListView = currentScrollingListView else { return }
-            currentScrollingListView.contentOffset = CGPoint.zero
+            currentScrollingListView.contentOffset = CGPoint(x: -currentScrollingListView.contentInset.left, y: -currentScrollingListView.contentInset.top)
             currentScrollingListView.showsVerticalScrollIndicator = false
         } else {
-            tableView.contentOffset = CGPoint(x: 0, y: headerViewHeight - handUpOffsetY)
+            tableView.contentOffset = CGPoint(x: 0, y: headerViewHeight - hangUpOffsetY)
             currentScrollingListView!.showsVerticalScrollIndicator = true
         }
     }
@@ -278,18 +344,32 @@ extension OctopusView: UITableViewDelegate {
 
     private func preferredProcessMainTableViewDidScroll(_ scrollView: UIScrollView) {
 
-        if let currentScrollingListView = currentScrollingListView, currentScrollingListView.contentOffset.y > 0 {
-            tableView.contentOffset = CGPoint(x: 0, y: headerViewHeight - handUpOffsetY)
+        if let currentScrollingListView = currentScrollingListView, currentScrollingListView.contentOffset.y > -currentScrollingListView.contentInset.top {
+            tableView.contentOffset = CGPoint(x: 0, y: headerViewHeight - hangUpOffsetY)
+            if status == .normal {
+                status = .hangUp
+                delegate?.octopusViewStatusChanged(self, status: .hangUp)
+            }
         }
-        if tableView.contentOffset.y < headerViewHeight - handUpOffsetY {
+        if tableView.contentOffset.y < CGFloat(headerViewHeight - hangUpOffsetY) {
+            if status == .hangUp {
+                status = .normal
+                delegate?.octopusViewStatusChanged(self, status: .normal)
+            }
             listContainerView.observations.keys.forEach({
-                $0.contentOffset = CGPoint.zero
+                $0.contentOffset = CGPoint(x: -$0.contentInset.left, y: -$0.contentInset.top)
             })
         }
 
-        if scrollView.contentOffset.y > headerViewHeight - handUpOffsetY && (currentScrollingListView?.contentOffset.y ?? 0) == 0 {
-            tableView.contentOffset = CGPoint(x: 0, y: headerViewHeight - handUpOffsetY)
+        if scrollView.contentOffset.y > CGFloat(headerViewHeight - hangUpOffsetY) {
+            if let currentScrollingListView = currentScrollingListView, currentScrollingListView.contentOffset.y > -currentScrollingListView.contentInset.top { return }
+            tableView.contentOffset = CGPoint(x: 0, y: headerViewHeight - hangUpOffsetY)
+            if status == .normal {
+                status = .hangUp
+                delegate?.octopusViewStatusChanged(self, status: .hangUp)
+            }
         }
+
     }
 
     public func scrollViewDidZoom(_ scrollView: UIScrollView) {
@@ -317,7 +397,6 @@ extension OctopusView: UITableViewDelegate {
     public func scrollViewWillBeginDecelerating(_ scrollView: UIScrollView) {
         delegate?.octopusViewWillBeginDecelerating(self)
     }
-
 
     public func scrollViewDidEndScrollingAnimation(_ scrollView: UIScrollView) {
         listContainerView.collectionView.isScrollEnabled = true
@@ -364,9 +443,11 @@ extension OctopusView: OctopusListContainerViewDelegate {
 
 public class OctopusMainTableView: UITableView, UIGestureRecognizerDelegate {
 
+    var octopusViewGestureRecognizer: ((UIGestureRecognizer, UIGestureRecognizer) -> Bool)?
+
     public func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldRecognizeSimultaneouslyWith otherGestureRecognizer: UIGestureRecognizer) -> Bool {
 
-        return gestureRecognizer is UIPanGestureRecognizer && otherGestureRecognizer is UIPanGestureRecognizer
+        return octopusViewGestureRecognizer?(gestureRecognizer, otherGestureRecognizer) ?? true
 
     }
 }
