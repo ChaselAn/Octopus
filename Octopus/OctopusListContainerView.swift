@@ -39,7 +39,7 @@ class OctopusListContainerView: UIView {
         return collectionView.indexPathsForVisibleItems.map({ $0.item })
     }
 
-    var observations: [UIScrollView: NSKeyValueObservation] = [:]
+    var observations: [Int: (UIScrollView, NSKeyValueObservation)] = [:]
 
     private var containerViews: [Int: UIView] = [:]
 
@@ -104,9 +104,7 @@ extension OctopusListContainerView: UICollectionViewDataSource {
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "OctopusPageCell", for: indexPath) as! OctopusPageCell
         for view in cell.contentView.subviews {
-            if let scrollView = cell.octopusPage?.scrollViewInContainerView() {
-                observations[scrollView] = nil
-            }
+            observations[indexPath.item] = nil
             view.removeFromSuperview()
         }
         guard let octopusPage = dataOctopusPage?(indexPath.row) else { return cell }
@@ -123,7 +121,7 @@ extension OctopusListContainerView: UICollectionViewDataSource {
         layoutIfNeeded()
         containerView.frame = CGRect(origin: bounds.origin, size: CGSize(width: bounds.width, height: cellHeight?() ?? bounds.height))
         containerView.layoutIfNeeded()
-        observations[scrollView] = observation
+        observations[indexPath.item] = (scrollView, observation)
         containerViews[indexPath.item] = containerView
 
         return cell

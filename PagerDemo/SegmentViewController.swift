@@ -17,6 +17,8 @@ class SegmentViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
+        title = "Octopus"
+
         octopusView.dataSource = self
         octopusView.delegate = self
 //        if #available(iOS 11.0, *) {

@@ -368,8 +368,9 @@ extension OctopusView: UITableViewDelegate {
                 status = .normal
                 delegate?.octopusViewStatusChanged(self, status: .normal)
             }
-            listContainerView.observations.keys.forEach({
-                $0.contentOffset = CGPoint(x: -$0.contentInset.left, y: -$0.contentInset.top)
+            listContainerView.observations.values.forEach({
+                let scrollView = $0.0
+                scrollView.contentOffset = CGPoint(x: -scrollView.contentInset.left, y: -scrollView.contentInset.top)
             })
         }
 
@@ -436,6 +437,11 @@ extension OctopusView: OctopusListContainerViewDelegate {
     }
 
     func collectionViewDidEndDragging(_ collectionView: UICollectionView, willDecelerate decelerate: Bool) {
+        if !decelerate {
+            if let scrollingView = (listContainerView.collectionView.visibleCells.first as? OctopusPageCell)?.octopusPage?.scrollViewInContainerView() {
+                currentScrollingListView = scrollingView
+            }
+        }
         delegate?.octopusPageViewDidEndDragging(collectionView, willDecelerate: decelerate)
     }
 
@@ -444,10 +450,16 @@ extension OctopusView: OctopusListContainerViewDelegate {
     }
 
     func collectionViewDidEndDecelerating(_ collectionView: UICollectionView) {
+        if let scrollingView = (listContainerView.collectionView.visibleCells.first as? OctopusPageCell)?.octopusPage?.scrollViewInContainerView() {
+            currentScrollingListView = scrollingView
+        }
         delegate?.octopusPageViewDidEndDecelerating(collectionView)
     }
 
     func collectionViewDidEndScrollingAnimation(_ collectionView: UICollectionView) {
+        if let scrollingView = (listContainerView.collectionView.visibleCells.first as? OctopusPageCell)?.octopusPage?.scrollViewInContainerView() {
+            currentScrollingListView = scrollingView
+        }
         delegate?.octopusPageViewDidEndScrollingAnimation(collectionView)
     }
 
