@@ -20,11 +20,11 @@ $ pod install
 
 ### How to use
 
-![](https://raw.githubusercontent.com/ChaselAn/Octopus/master/Octopus.png)
+<img width="250" height="445" src="https://raw.githubusercontent.com/ChaselAn/Octopus/master/Octopus.png"/>
 
 ```swift
-		let octopusView = OctopusView()	  
-		octopusView.dataSource = self
+	let octopusView = OctopusView()	  
+	octopusView.dataSource = self
         octopusView.delegate = self
 //        if #available(iOS 11.0, *) {
 //            octopusView.tableView.contentInsetAdjustmentBehavior = .never
@@ -60,8 +60,8 @@ public protocol OctopusViewDataSource: class {
 * I suggest you implement the caching mechanism for page view by yourself.
 
 ```swift
-	private var vcs: [Int: OctopusDataViewController] = [:]
-	func octopusView(_ octopusView: OctopusView, pageViewControllerAt index: Int) -> OctopusPage {
+private var vcs: [Int: OctopusDataViewController] = [:]
+func octopusView(_ octopusView: OctopusView, pageViewControllerAt index: Int) -> OctopusPage {
         if let cacheVC = vcs[index] {
             return cacheVC
         }
