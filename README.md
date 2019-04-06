@@ -18,6 +18,14 @@ pod 'Octopus', '~> 1.0.1'
 $ pod install
 ```
 
+- swift5.0:
+
+```ruby
+pod 'Octopus', '~> 1.1.0'
+# Then, run the following command:
+$ pod install
+```
+
 ### How to use
 
 <img width="250" height="445" src="https://raw.githubusercontent.com/ChaselAn/Octopus/master/Octopus.png"/>
