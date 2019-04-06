@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
     s.name         = 'Octopus'
-    s.version      = '1.0.1'
+    s.version      = '1.1.0'
     s.summary      = 'Octopus demo'
     s.homepage     = 'https://github.com/ChaselAn/Octopus'
     s.license      = 'MIT'
@@ -9,4 +9,5 @@ Pod::Spec.new do |s|
     s.source       = {:git => 'https://github.com/ChaselAn/Octopus.git', :tag => s.version}
     s.source_files = 'Octopus/*.swift'
     s.requires_arc = true
+    s.swift_version = '5.0'
 end
