@@ -318,12 +318,13 @@ public class OctopusView: UIView {
 extension OctopusView: UITableViewDataSource {
 
     public func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        guard let source = dataSource else { return 0 }
-        return source.numberOfPages(in: self) > 0 ? 1 : 0
+        guard dataSource != nil else { return 0 }
+        return 1
     }
 
     public func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "OctopusViewCell", for: indexPath)
+        cell.backgroundColor = .clear
         for subview in cell.contentView.subviews {
             subview.removeFromSuperview()
         }
