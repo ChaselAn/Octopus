@@ -20,23 +20,27 @@ extension OctopusPage {
     }
 }
 
+open class OctopusSegmentView: UIView {}
+
+open class OctopusHeaderView: UIView {}
+
 public protocol OctopusViewDataSource: class {
 
     func numberOfPages(in octopusView: OctopusView) -> Int
     func octopusView(_ octopusView: OctopusView, pageViewControllerAt index: Int) -> OctopusPage
 
-    func headerView(in octopusView: OctopusView) -> UIView?
+    func headerView(in octopusView: OctopusView) -> OctopusHeaderView?
     func headerViewHeight(in octopusView: OctopusView) -> Int // 鉴于scrollView的滚动精度缺失问题，暂时使用整型
 
-    func segmentView(in octopusView: OctopusView) -> UIView?
+    func segmentView(in octopusView: OctopusView) -> OctopusSegmentView?
     func segmentViewHeight(in octopusView: OctopusView) -> Int // 鉴于scrollView的滚动精度缺失问题，暂时使用整型
 }
 
 public extension OctopusViewDataSource {
-    func headerView(in octopusView: OctopusView) -> UIView? { return nil }
+    func headerView(in octopusView: OctopusView) -> OctopusHeaderView? { return nil }
     func headerViewHeight(in octopusView: OctopusView) -> Int { return 0 }
 
-    func segmentView(in octopusView: OctopusView) -> UIView? { return nil }
+    func segmentView(in octopusView: OctopusView) -> OctopusSegmentView? { return nil }
     func segmentViewHeight(in octopusView: OctopusView) -> Int { return 0 }
 }
 
@@ -53,6 +57,7 @@ public protocol OctopusViewDelegate: NSObjectProtocol {
     func octopusViewWillBeginDecelerating(_ octopusView: OctopusView)
     func octopusViewDidEndDecelerating(_ octopusView: OctopusView)
     func octopusViewDidEndScrollingAnimation(_ octopusView: OctopusView)
+    func octopusViewShouldScrollToTop(_ octopusView: OctopusView) -> Bool
 
     func octopusPageViewDidScroll(_ octopusPageView: UICollectionView)
     func octopusPageViewDidZoom(_ octopusPageView: UICollectionView)
@@ -80,6 +85,7 @@ public extension OctopusViewDelegate {
     func octopusViewWillBeginDecelerating(_ octopusView: OctopusView) {}
     func octopusViewDidEndDecelerating(_ octopusView: OctopusView) {}
     func octopusViewDidEndScrollingAnimation(_ octopusView: OctopusView) {}
+    func octopusViewShouldScrollToTop(_ octopusView: OctopusView) -> Bool { return true }
 
     func octopusPageViewDidScroll(_ octopusPageView: UICollectionView) {}
     func octopusPageViewDidZoom(_ octopusPageView: UICollectionView) {}
@@ -117,8 +123,12 @@ public class OctopusView: UIView {
     }
 
     public var currentMainVisibleIndex: Int {
+        layoutIfNeeded()
+        guard listContainerView.collectionView.bounds.width > 0 else {
+            return 0
+        }
         let x = listContainerView.collectionView.contentOffset.x + listContainerView.collectionView.bounds.width / 2
-        return lround(Double(x / listContainerView.collectionView.contentSize.width))
+        return Int(Double(x / listContainerView.collectionView.bounds.width))
     }
 
     public lazy var tableView: OctopusMainTableView = {
@@ -147,54 +157,57 @@ public class OctopusView: UIView {
     public func updateHeaderViewHeight(animated: Bool) {
         let headerViewHeightFloat = CGFloat(headerViewHeight)
         guard headerViewHeightFloat != headerViewHeightConstraint?.constant else { return }
-        guard dataSource?.headerView(in: self) != nil else {
-            return
-        }
-        if animated {
-            tableView.beginUpdates()
-            UIView.animate(withDuration: 0.3, animations: { [weak self] in
-                guard let strongSelf = self else { return }
-                strongSelf.headerViewHeightConstraint?.constant = headerViewHeightFloat
-                strongSelf.realHeaderView.frame.size.height = CGFloat(strongSelf.headerViewTotalHeight)
-                strongSelf.realHeaderView.layoutIfNeeded()
-                }, completion: { [weak self] _ in
-                    guard let strongSelf = self else { return }
-                    strongSelf.tableView.tableHeaderView = strongSelf.realHeaderView
-            })
-            tableView.endUpdates()
-        } else {
-            headerViewHeightConstraint?.constant = headerViewHeightFloat
+        if dataSource?.headerView(in: self) == nil {
+            if let headerView = realHeaderView.subviews.first(where: { $0 is OctopusHeaderView }) {
+                headerView.removeFromSuperview()
+            }
             realHeaderView.frame.size.height = CGFloat(headerViewTotalHeight)
             tableView.tableHeaderView = realHeaderView
+            preferredProcessMainTableViewDidScroll(tableView)
+        } else if !realHeaderView.subviews.contains(where: { $0 is OctopusHeaderView }) {
+            setupHeaderView(tableView)
+        } else {
+            if animated {
+                tableView.beginUpdates()
+                headerViewHeightConstraint?.constant = headerViewHeightFloat
+                tableView.tableHeaderView?.frame.size.height = CGFloat(headerViewTotalHeight)
+                realHeaderView.layoutIfNeeded()
+                tableView.endUpdates()
+            } else {
+                headerViewHeightConstraint?.constant = headerViewHeightFloat
+                realHeaderView.frame.size.height = CGFloat(headerViewTotalHeight)
+                tableView.tableHeaderView = realHeaderView
+            }
+
+            preferredProcessMainTableViewDidScroll(tableView)
         }
-
-        preferredProcessMainTableViewDidScroll(tableView)
-
     }
 
     public func updateSegmentViewHeight(animated: Bool) {
-        guard dataSource?.segmentView(in: self) != nil else {
-            return
-        }
-        if animated {
-            tableView.beginUpdates()
-            UIView.animate(withDuration: 0.3, animations: { [weak self] in
-                guard let strongSelf = self else { return }
-                strongSelf.segmentViewHeightConstraint?.constant = CGFloat(strongSelf.segmentViewHeight)
-                strongSelf.realHeaderView.frame.size.height = CGFloat(strongSelf.headerViewTotalHeight)
-                strongSelf.realHeaderView.layoutIfNeeded()
-                }, completion: { [weak self] _ in
-                    guard let strongSelf = self else { return }
-                    strongSelf.tableView.tableHeaderView = strongSelf.realHeaderView
-            })
-            tableView.endUpdates() 
-        } else {
-            segmentViewHeightConstraint?.constant = CGFloat(segmentViewHeight)
+        if dataSource?.segmentView(in: self) == nil {
+            if let segmentView = realHeaderView.subviews.first(where: { $0 is OctopusSegmentView }) {
+                segmentView.removeFromSuperview()
+            }
             realHeaderView.frame.size.height = CGFloat(headerViewTotalHeight)
             tableView.tableHeaderView = realHeaderView
-        }
+            listContainerView.updateMainTableCellHeight()
+        } else if !realHeaderView.subviews.contains(where: { $0 is OctopusSegmentView }) {
+            setupHeaderView(tableView)
+        } else {
+            if animated {
+                tableView.beginUpdates()
+                segmentViewHeightConstraint?.constant = CGFloat(segmentViewHeight)
+                tableView.tableHeaderView?.frame.size.height = CGFloat(headerViewTotalHeight)
+                realHeaderView.layoutIfNeeded()
+                tableView.endUpdates()
+            } else {
+                segmentViewHeightConstraint?.constant = CGFloat(segmentViewHeight)
+                realHeaderView.frame.size.height = CGFloat(headerViewTotalHeight)
+                tableView.tableHeaderView = realHeaderView
+            }
 
-        listContainerView.updateMainTableCellHeight()
+            listContainerView.updateMainTableCellHeight()
+        }
     }
 
     public func scrollToPage(index: Int) {
@@ -417,6 +430,9 @@ extension OctopusView: UITableViewDelegate {
         delegate?.octopusViewDidEndScrollingAnimation(self)
     }
 
+    public func scrollViewShouldScrollToTop(_ scrollView: UIScrollView) -> Bool {
+        return delegate?.octopusViewShouldScrollToTop(self) ?? true
+    }
 }
 
 extension OctopusView: OctopusListContainerViewDelegate {
@@ -443,6 +459,7 @@ extension OctopusView: OctopusListContainerViewDelegate {
                 currentScrollingListView = scrollingView
             }
         }
+
         delegate?.octopusPageViewDidEndDragging(collectionView, willDecelerate: decelerate)
     }
 

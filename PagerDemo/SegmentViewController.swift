@@ -60,8 +60,8 @@ extension SegmentViewController: OctopusViewDataSource {
         return vc
     }
 
-    func headerView(in octopusView: OctopusView) -> UIView? {
-        let view = UIView()
+    func headerView(in octopusView: OctopusView) -> OctopusHeaderView? {
+        let view = OctopusHeaderView()
         view.backgroundColor = .red
         return view
     }
@@ -70,8 +70,8 @@ extension SegmentViewController: OctopusViewDataSource {
         return 150
     }
 
-    func segmentView(in octopusView: OctopusView) -> UIView? {
-        let view = UIView()
+    func segmentView(in octopusView: OctopusView) -> OctopusSegmentView? {
+        let view = OctopusSegmentView()
         view.backgroundColor = .green
         view.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(segmentViewClicked)))
         return view
