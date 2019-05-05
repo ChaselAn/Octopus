@@ -21,7 +21,7 @@ $ pod install
 - swift5.0:
 
 ```ruby
-pod 'Octopus', '~> 1.1.0'
+pod 'Octopus', '~> 1.1.2'
 # Then, run the following command:
 $ pod install
 ```
